@@ -1,1 +1,1 @@
-{}
+{:database-url "postgresql://localhost/doggallery_dev?user=postgres"}

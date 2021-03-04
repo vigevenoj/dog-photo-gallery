@@ -35,7 +35,7 @@
 
    ;; swagger documentation
    ["" {:no-doc true
-        :swagger {:info {:title "my-api"
+        :swagger {:info {:title "Dog Photo Gallery"
                          :description "https://cljdoc.org/d/metosin/reitit"}}}
 
     ["/swagger.json"
@@ -70,6 +70,7 @@
    ["/files"
     {:swagger {:tags ["files"]}}
 
+    ; todo add authn+authz to this endpoint (or stick it behind a forward proxy)
     ["/upload"
      {:post {:summary "upload a file"
              :parameters {:multipart {:file multipart/temp-file-part}}

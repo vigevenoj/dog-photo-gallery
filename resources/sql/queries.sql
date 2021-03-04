@@ -19,3 +19,21 @@ WHERE id = :id
 -- :doc deletes a user record given the id
 DELETE FROM users
 WHERE id = :id
+
+
+-- :name add-dog-photo! :! :n
+-- :doc adds a new dog photo to the database
+INSERT INTO photos
+(name, taken, metadata, photo)
+VALUES
+(:name, :taken, :metadata, :photo)
+
+-- :name get-dog-photo :? :1
+-- :doc retrieves a dog photo given the id
+SELECT * FROM photos
+WHERE id = :id
+
+-- :name delete-dog-photo! :! :n
+-- :doc deletes a dog photo record given the id
+DELETE FROM photos
+WHERE id = :id

@@ -19,3 +19,18 @@ To start a web server for the application, run:
 ## License
 
 Copyright © 2021 FIXME
+
+
+# TODO
+* database schema
+  * photo to file mapping
+  * photo date
+  * photo metadata
+* photo storage
+  * store photos in object storage
+  * stream photo through app to client
+  * remove exif/xmp metadata from image sent to client
+* API
+  * most recent photos
+  * photos x years ago (memories)
+  * upload new photo (start with form method)
