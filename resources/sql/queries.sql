@@ -30,10 +30,17 @@ VALUES
 
 -- :name get-dog-photo :? :1
 -- :doc retrieves a dog photo given the id
-SELECT * FROM photos
+SELECT id, name, taken, metadata, photo FROM photos
 WHERE id = :id
 
 -- :name delete-dog-photo! :! :n
 -- :doc deletes a dog photo record given the id
 DELETE FROM photos
 WHERE id = :id
+
+-- :name get-previous-years-photos :? :n
+-- :doc retrieve dog photos from this day in previous years
+SELECT id, name, taken, metadata, photo from photos
+WHERE extract(month from taken) = :month
+AND extract(day from taken) = :day
+ORDER BY taken asc;
