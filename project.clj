@@ -34,6 +34,7 @@
                  [org.webjars/webjars-locator-jboss-vfs "0.1.0"]
                  [re-frame "1.1.2"]
                  [reagent "1.0.0"]
+                 [remworks/cljs-exif-reader "0.5.1"]
                  [ring-webjars "0.2.0"]
                  [ring/ring-core "1.8.2"]
                  [ring/ring-defaults "0.3.2"]
