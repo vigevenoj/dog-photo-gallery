@@ -8,6 +8,7 @@
                  [cljs-ajax "0.8.1"]
                  [clojure.java-time "0.3.2"]
                  [com.cognitect/transit-clj "1.0.324"]
+                 [com.novemberain/pantomime "2.11.0"]
                  [conman "0.9.1"]
                  [cprop "0.1.17"]
                  [day8.re-frame/http-fx "0.2.2"]

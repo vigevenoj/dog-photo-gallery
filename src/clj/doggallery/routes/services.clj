@@ -1,5 +1,6 @@
 (ns doggallery.routes.services
   (:require
+    [clojure.tools.logging :as log]
     [reitit.swagger :as swagger]
     [reitit.swagger-ui :as swagger-ui]
     [reitit.ring.coercion :as coercion]
@@ -9,7 +10,31 @@
     [reitit.ring.middleware.parameters :as parameters]
     [doggallery.middleware.formats :as formats]
     [ring.util.http-response :refer :all]
+    [doggallery.images :as images]
+    [pantomime.mime :refer [mime-type-of]]
     [clojure.java.io :as io]))
+
+(defn is-image-file? [upload-file]
+  (= "image/jpeg"  (mime-type-of (:tempfile upload-file))))
+
+
+(defn handle-image-upload [file]
+  (log/warn "uploaded a file")
+  (let [tempfile (:tempfile file)]
+    (log/warn "File is type: " (mime-type-of tempfile))
+    (if (is-image-file? file)
+      (do
+        (log/warn "is image")
+        {:status 200
+         :body   {:name          (:filename file)
+                  :size          (:size file)
+                  :exif-metadata (images/single-image-full-metadata tempfile)}})
+      (do
+        (log/warn "is not image")
+        {:status 400
+         :body   {:error "File was not image"}}))))
+
+
 
 (defn service-routes []
   ["/api"
@@ -48,24 +73,7 @@
 
    ["/ping"
     {:get (constantly (ok {:message "pong"}))}]
-   
 
-   ["/math"
-    {:swagger {:tags ["math"]}}
-
-    ["/plus"
-     {:get {:summary "plus with spec query parameters"
-            :parameters {:query {:x int?, :y int?}}
-            :responses {200 {:body {:total pos-int?}}}
-            :handler (fn [{{{:keys [x y]} :query} :parameters}]
-                       {:status 200
-                        :body {:total (+ x y)}})}
-      :post {:summary "plus with spec body parameters"
-             :parameters {:body {:x int?, :y int?}}
-             :responses {200 {:body {:total pos-int?}}}
-             :handler (fn [{{{:keys [x y]} :body} :parameters}]
-                        {:status 200
-                         :body {:total (+ x y)}})}}]]
 
    ["/files"
     {:swagger {:tags ["files"]}}
@@ -74,11 +82,10 @@
     ["/upload"
      {:post {:summary "upload a file"
              :parameters {:multipart {:file multipart/temp-file-part}}
-             :responses {200 {:body {:name string?, :size int?}}}
+             :responses {200 {:body {:name string?, :size int?, :exif-metadata map?}}
+                         400 {:description "Bad request"}}
              :handler (fn [{{{:keys [file]} :multipart} :parameters}]
-                        {:status 200
-                         :body {:name (:filename file)
-                                :size (:size file)}})}}]
+                        (handle-image-upload file))}}]
 
     ["/download"
      {:get {:summary "downloads a file"
