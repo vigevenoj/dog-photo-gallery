@@ -26,11 +26,11 @@
         (try
          (let [meta (images/single-image-full-metadata tempfile)
                userid 1
-               photo-id (db/add-dog-photo! (:filename file)
-                                           userid
-                                           (:date-time-original meta)
-                                           meta
-                                           tempfile)]
+               photo-id (db/add-dog-photo! {:name (:filename file)
+                                            :userid userid
+                                            :taken (:date-time-original meta)
+                                            :metadata meta
+                                            :photo tempfile})]
            {:status 200
             :body   {:name          (:filename file)
                      :photo-id      photo-id
