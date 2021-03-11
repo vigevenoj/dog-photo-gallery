@@ -30,7 +30,7 @@
                                             :userid userid
                                             :taken (:date-time-original meta)
                                             :metadata meta
-                                            :photo tempfile})]
+                                            :photo (images/file->bytes tempfile)})]
            {:status 200
             :body   {:name          (:filename file)
                      :photo-id      photo-id

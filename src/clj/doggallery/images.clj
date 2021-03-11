@@ -24,3 +24,9 @@
 
 (defn core-keys [metadata]
   (select-keys metadata core-exif-keys))
+
+(defn file->bytes [file]
+  (with-open [xin (io/input-stream file)
+              xout (java.io.ByteArrayOutputStream.)]
+    (io/copy xin xout)
+    (.toByteArray xout)))
