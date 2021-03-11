@@ -1,1 +1,4 @@
-{:database-url "postgresql://localhost/doggallery_dev?user=postgres"}
+{:database-url "postgresql://localhost/doggallery_dev?user=postgres"
+ :client-id "doggallery"
+ :oidc-configuration-endpoint "https://xn--jv8h.xn--9q8h2cq1m.ws/auth/realms/sharkbaitextraordinaire/.well-known/openid-configuration"}
+

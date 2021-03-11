@@ -24,9 +24,9 @@ WHERE id = :id
 -- :name add-dog-photo! :! :n
 -- :doc adds a new dog photo to the database
 INSERT INTO photos
-(name, taken, metadata, photo)
+(name, userid, taken, metadata, photo)
 VALUES
-(:name, :taken, :metadata, :photo)
+(:name, :userid, :taken, :metadata, :photo)
 
 -- :name get-dog-photo :? :1
 -- :doc retrieves a dog photo given the id
@@ -43,4 +43,4 @@ WHERE id = :id
 SELECT id, name, taken, metadata, photo from photos
 WHERE extract(month from taken) = :month
 AND extract(day from taken) = :day
-ORDER BY taken asc;
+ORDER BY taken desc;

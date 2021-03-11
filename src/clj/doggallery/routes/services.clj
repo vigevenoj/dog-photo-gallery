@@ -10,6 +10,7 @@
     [reitit.ring.middleware.parameters :as parameters]
     [doggallery.middleware.formats :as formats]
     [ring.util.http-response :refer :all]
+    [doggallery.db.core :as db]
     [doggallery.images :as images]
     [pantomime.mime :refer [mime-type-of]]
     [clojure.java.io :as io]))
@@ -21,15 +22,27 @@
 (defn handle-image-upload [file]
   (log/warn "uploaded a file")
   (let [tempfile (:tempfile file)]
-    (log/warn "File is type: " (mime-type-of tempfile))
     (if (is-image-file? file)
-      (do
-        (log/warn "is image")
-        {:status 200
-         :body   {:name          (:filename file)
-                  :size          (:size file)
-                  :exif-metadata (images/single-image-full-metadata tempfile)}})
-      (do
+        (try
+         (let [meta (images/single-image-full-metadata tempfile)
+               userid 1
+               photo-id (db/add-dog-photo! (:filename file)
+                                           userid
+                                           (:date-time-original meta)
+                                           meta
+                                           tempfile)]
+           {:status 200
+            :body   {:name          (:filename file)
+                     :photo-id      photo-id
+                     :size          (:size file)
+                     :exif-metadata (images/single-image-full-metadata tempfile)}})
+
+         (catch Exception e
+           (do
+             (log/error (.printStackTrace e))
+             {:status 500
+              :body "Error saving uploaded image"})))
+      (do ; If the file is not an image file
         (log/warn "is not image")
         {:status 400
          :body   {:error "File was not image"}}))))
