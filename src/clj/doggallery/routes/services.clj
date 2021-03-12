@@ -13,7 +13,8 @@
     [doggallery.db.core :as db]
     [doggallery.images :as images]
     [pantomime.mime :refer [mime-type-of]]
-    [clojure.java.io :as io]))
+    [clojure.java.io :as io])
+  (:import (java.io ByteArrayInputStream)))
 
 (defn is-image-file? [upload-file]
   (= "image/jpeg"  (mime-type-of (:tempfile upload-file))))
@@ -102,18 +103,18 @@
                         (handle-image-upload file))}}]
 
     ["/photo/:photo-id"
-     {:get {:summary "Download an image by ID"
-            :swagger {:produces ["image/jpg"]}
+     {:get {:summary    "Download an image by ID"
+            :swagger    {:produces ["image/jpg"]}
             :parameters {:path {:photo-id int?}}
-            :responses {:200 {:description "An image"}
-                        :404 {:description "Not found"}}
-            :handler (fn [{{{:keys [photo-id]} :path} :parameters}]
-                       (if-let [result (db/get-dog-photo {:id photo-id})]
-                         {:status 200
-                          :headers {"Content-Type" "image/jpg"}
-                          :body (.ByteArrayInputStream. (:photo result))}
-                         {:status 404
-                          :body {:error "Not found"}}))}}]
+            :responses  {:200 {:description "An image"}
+                         :404 {:description "Not found"}}
+            :handler    (fn [{{{:keys [photo-id]} :path} :parameters}]
+                          (if-let [result (db/get-dog-photo {:id photo-id})]
+                            {:status  200
+                             :headers {"Content-Type" "image/jpg"}
+                             :body    (ByteArrayInputStream. (:photo result))}
+                            {:status 404
+                             :body   {:error "Not found"}}))}}]
 
 
 
