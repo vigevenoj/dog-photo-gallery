@@ -92,6 +92,7 @@
     {:swagger {:tags ["files"]}}
 
     ; todo add authn+authz to this endpoint (or stick it behind a forward proxy)
+    ; if behind forward proxy, read the userid out of a header or something
     ["/upload"
      {:post {:summary "upload a file"
              :parameters {:multipart {:file multipart/temp-file-part}}
@@ -99,6 +100,22 @@
                          400 {:description "Bad request"}}
              :handler (fn [{{{:keys [file]} :multipart} :parameters}]
                         (handle-image-upload file))}}]
+
+    ["/photo/:photo-id"
+     {:get {:summary "Download an image by ID"
+            :swagger {:produces ["image/jpg"]}
+            :parameters {:path {:photo-id int?}}
+            :responses {:200 {:description "An image"}
+                        :404 {:description "Not found"}}
+            :handler (fn [{{{:keys [photo-id]} :path} :parameters}]
+                       (if-let [result (db/get-dog-photo {:id photo-id})]
+                         {:status 200
+                          :headers {"Content-Type" "image/jpg"}
+                          :body (.ByteArrayInputStream. (:photo result))}
+                         {:status 404
+                          :body {:error "Not found"}}))}}]
+
+
 
     ["/download"
      {:get {:summary "downloads a file"
