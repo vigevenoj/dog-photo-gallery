@@ -33,6 +33,11 @@ VALUES
 SELECT id, name, taken, metadata, photo FROM photos
 WHERE id = :id
 
+-- :name get-dog-photo-no-binary :? :1
+-- :doc  given the id, return a row about a dog photo, without the binary
+SELECT id, name, taken, metadata FROM photos
+WHERE id = :id
+
 -- :name delete-dog-photo! :! :n
 -- :doc deletes a dog photo record given the id
 DELETE FROM photos

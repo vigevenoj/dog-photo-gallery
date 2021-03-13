@@ -89,21 +89,37 @@
     {:get (constantly (ok {:message "pong"}))}]
 
 
-   ["/files"
-    {:swagger {:tags ["files"]}}
+   ["/photos"
+    {:swagger {:tags ["photos"]
+               :tryItOutEnabled true}}
+    ;; should really think about how to fetch 
 
     ; todo add authn+authz to this endpoint (or stick it behind a forward proxy)
     ; if behind forward proxy, read the userid out of a header or something
-    ["/upload"
-     {:post {:summary "upload a file"
+    ["/secure/upload"
+     {:post {:summary "upload a photo. jpg only"
              :parameters {:multipart {:file multipart/temp-file-part}}
              :responses {200 {:body {:name string?, :size int?, :exif-metadata map?}}
                          400 {:description "Bad request"}}
              :handler (fn [{{{:keys [file]} :multipart} :parameters}]
                         (handle-image-upload file))}}]
 
-    ["/photo/:photo-id"
-     {:get {:summary    "Download an image by ID"
+    ["/:photo-id"
+     {:get {:summary "Get data about a single photo by its ID"
+            :swagger {:produces ["application/json"]}
+            :parameters {:path {:photo-id int?}}
+            :responses {:200 {:body {:id int? :name string? :exif-metadata map?}}
+                        :400 {:description "Bad request"}
+                        :404 {:description "Not found"}}
+            :handler (fn [{{{:keys [photo-id]} :path } :parameters}]
+                       (if-let [result (db/get-dog-photo-no-binary {:id photo-id})]
+                         {:status 200
+                          :body result}
+                         {:status 404
+                          :body {:error "Not found"}}))}}]
+
+    ["/:photo-id/image"
+     {:get {:summary    "Get a photo by its ID"
             :swagger    {:produces ["image/jpg"]}
             :parameters {:path {:photo-id int?}}
             :responses  {:200 {:description "An image"}
@@ -114,16 +130,4 @@
                              :headers {"Content-Type" "image/jpg"}
                              :body    (ByteArrayInputStream. (:photo result))}
                             {:status 404
-                             :body   {:error "Not found"}}))}}]
-
-
-
-    ["/download"
-     {:get {:summary "downloads a file"
-            :swagger {:produces ["image/png"]}
-            :handler (fn [_]
-                       {:status 200
-                        :headers {"Content-Type" "image/png"}
-                        :body (-> "public/img/warning_clojure.png"
-                                  (io/resource)
-                                  (io/input-stream))})}}]]])
+                             :body   {:error "Not found"}}))}}]]])
