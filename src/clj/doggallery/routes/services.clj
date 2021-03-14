@@ -23,6 +23,8 @@
 (defn handle-image-upload [file]
   (log/warn "uploaded a file")
   (let [tempfile (:tempfile file)]
+    ; todo strip metadata from image
+    ; todo generate thumbnails at appropriate sizes?
     (if (is-image-file? file)
         (try
          (let [meta (images/single-image-full-metadata tempfile)
@@ -92,7 +94,9 @@
    ["/photos"
     {:swagger {:tags ["photos"]
                :tryItOutEnabled true}}
-    ;; should really think about how to fetch 
+    ;; should really think about how to fetch a set of images to display them,
+    ;; like "most recent" or something else that makes sense?
+    ;; perhaps "today's photos", "this week's photos", "the x most-recent"
 
     ; todo add authn+authz to this endpoint (or stick it behind a forward proxy)
     ; if behind forward proxy, read the userid out of a header or something
