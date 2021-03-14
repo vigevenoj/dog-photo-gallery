@@ -5,7 +5,7 @@ COPY . /opt/app
 RUN lein uberjar
 
 
-FROM openjdk:8-alpine
+FROM openjdk:11-jdk-slim
 
 COPY --from=BUILD_CONTAINER /opt/app/target/uberjar/doggallery.jar /doggallery/app.jar
 
