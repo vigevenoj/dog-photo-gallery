@@ -43,9 +43,16 @@ WHERE id = :id
 DELETE FROM photos
 WHERE id = :id
 
--- :name get-previous-years-photos :? :n
+-- :name get-previous-years-photos :? :*
 -- :doc retrieve dog photos from this day in previous years
 SELECT id, name, taken, metadata, photo from photos
 WHERE extract(month from taken) = :month
 AND extract(day from taken) = :day
 ORDER BY taken desc;
+
+-- :name get-recent-photos :? :*
+-- :doc retrieve recently-taken dog photos
+SELECT id, name, taken, metadata
+FROM photos
+ORDER BY taken DESC
+LIMIT :limit
