@@ -20,7 +20,7 @@
                  [luminus/ring-ttl-session "0.3.3"]
                  [markdown-clj "1.10.5"]
                  [metosin/muuntaja "0.6.8"]
-                 [metosin/reitit "0.5.12"]
+                 [metosin/reitit "0.5.10"] ; 0.5.12 results in java.lang.NoClassDefFoundError: com/fasterxml/jackson/core/util/JacksonFeature
                  [metosin/ring-http-response "0.9.2"]
                  [mount "0.1.16"]
                  [nrepl "0.8.3"]
