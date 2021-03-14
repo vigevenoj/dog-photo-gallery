@@ -16,16 +16,12 @@
     [clojure.java.io :as io])
   (:import (java.io ByteArrayInputStream)))
 
-(defn is-image-file? [upload-file]
-  (= "image/jpeg"  (mime-type-of (:tempfile upload-file))))
-
-
 (defn handle-image-upload [file]
   (log/warn "uploaded a file")
   (let [tempfile (:tempfile file)]
     ; todo strip metadata from image
     ; todo generate thumbnails at appropriate sizes?
-    (if (is-image-file? file)
+    (if (images/is-image-file? tempfile)
         (try
          (let [meta (images/single-image-full-metadata tempfile)
                userid 1
@@ -97,9 +93,22 @@
     ;; should really think about how to fetch a set of images to display them,
     ;; like "most recent" or something else that makes sense?
     ;; perhaps "today's photos", "this week's photos", "the x most-recent"
+    ["" {:get {:summary "Get recent photos"
+               :responses {:200 {:description "a list of photos"}
+                           :body {:photos map?}}
+               :handler (fn [{{{:keys [limit]} :query} :parameters}]
+                          (try
+                            {:status 200
+                             :body {:photos (db/get-recent-photos {:limit 10})}}))}}]
+
+
 
     ; todo add authn+authz to this endpoint (or stick it behind a forward proxy)
     ; if behind forward proxy, read the userid out of a header or something
+    ; used these as helpful guides:
+    ; https://github.com/knutesten/upload/blob/main/src/no/neksa/upload/keycloak.clj
+    ; https://github.com/SekibOmazic/file-upload-server/blob/master/src/sekibomazic/file_upload_server.clj
+    ; https://github.com/ring-clojure/ring/wiki/File-Uploads
     ["/secure/upload"
      {:post {:summary "upload a photo. jpg only"
              :parameters {:multipart {:file multipart/temp-file-part}}
