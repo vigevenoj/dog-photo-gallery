@@ -22,10 +22,9 @@
         (exif/from-jpeg (io/as-file image))
         core-exif-keys))
 
-(defn core-keys [metadata]
-  (select-keys metadata core-exif-keys))
-
-(defn file->bytes [file]
+(defn file->bytes
+  "Convert a file to byte array, in order to store it in postgres"
+  [file]
   (with-open [xin (io/input-stream file)
               xout (java.io.ByteArrayOutputStream.)]
     (io/copy xin xout)
