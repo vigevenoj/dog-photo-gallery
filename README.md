@@ -23,14 +23,12 @@ Copyright © 2021 FIXME
 
 # TODO
 * database schema
-  * photo to file mapping
-  * photo date
-  * photo metadata
+  * move photos to a separate table or external file/blob storage and map that from photo
 * photo storage
   * store photos in object storage
   * stream photo through app to client
   * remove exif/xmp metadata from image sent to client
+  * generate thumbnails
+  * resize image to various sizes and provide a srcset for responsive design
 * API
-  * most recent photos
-  * photos x years ago (memories)
-  * upload new photo (start with form method)
+  * most recent photos (add pagination)
