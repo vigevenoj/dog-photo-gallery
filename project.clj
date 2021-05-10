@@ -3,17 +3,21 @@
   :description "FIXME: write description"
   :url "http://example.com/FIXME"
 
-  :dependencies [[ch.qos.logback/logback-classic "1.2.3"]
+  :dependencies [[amazonica "0.3.156"]
+                 [ch.qos.logback/logback-classic "1.2.3"]
                  [cheshire "5.10.0"]
                  [cljs-ajax "0.8.1"]
                  [clojure.java-time "0.3.2"]
                  [com.cognitect/transit-clj "1.0.324"]
-                 [com.novemberain/pantomime "2.11.0"]
+                 ;[com.novemberain/pantomime "2.11.0"]
                  [conman "0.9.1"]
                  [cprop "0.1.17"]
+                 [danlentz/clj-uuid "0.1.9"]
                  [day8.re-frame/http-fx "0.2.3"]
                  [expound "0.8.9"]
+                 [buddy/buddy-core "1.10.1"]
                  [funcool/struct "1.4.0"]
+                 [http-kit "2.3.0"]
                  [luminus-migrations "0.7.1"]
                  [luminus-transit "0.1.2"]
                  [luminus-undertow "0.1.10"]

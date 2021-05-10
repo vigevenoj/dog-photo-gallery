@@ -1,6 +1,9 @@
 (ns doggallery.routes.services
   (:require
     [clojure.tools.logging :as log]
+    [org.httpkit.client :as http]
+    [ring.util.http-response :as r]
+    [ring.util.response]
     [reitit.swagger :as swagger]
     [reitit.swagger-ui :as swagger-ui]
     [reitit.ring.coercion :as coercion]
@@ -10,9 +13,11 @@
     [reitit.ring.middleware.parameters :as parameters]
     [doggallery.middleware.formats :as formats]
     [ring.util.http-response :refer :all]
+    [doggallery.config :refer [env]]
     [doggallery.db.core :as db]
     [doggallery.images :as images]
-    [pantomime.mime :refer [mime-type-of]]
+    ;[pantomime.mime :refer [mime-type-of]]
+    [clj-uuid :as uuid]
     [clojure.java.io :as io])
   (:import (java.io ByteArrayInputStream)))
 
@@ -21,9 +26,12 @@
   (let [tempfile (:tempfile file)]
     ; todo strip metadata from image
     ; todo generate thumbnails at appropriate sizes?
+    ; todo use conman/with-transaction to wrap saving the image metadata into the db and the image file into the object storage
     (if (images/is-image-file? tempfile)
         (try
          (let [meta (images/single-image-full-metadata tempfile)
+               ; make the :name a uuid
+               ; use with-transaction to wrap saving this and saving it to object storage
                userid 1
                photo-id (db/add-dog-photo! {:name (:filename file)
                                             :userid userid
@@ -45,6 +53,50 @@
         (log/warn "is not image")
         {:status 400
          :body   {:error "File was not image"}}))))
+
+;; make-file-stream and fetch-remote-image are adapted from
+;; https://stackoverflow.com/questions/33375826/how-can-i-stream-gridfs-files-to-web-clients-in-clojure-monger
+;; and
+;; https://github.com/luminus-framework/examples/blob/master/reporting-example/src/clj/reporting_example/routes/home.clj
+(defn make-file-stream
+  [file]
+  (ring.util.io/piped-input-stream
+    (fn [output-stream]
+      (.writeTo file output-stream))))
+
+(defn remote-image-url [image-url]
+  (let [imgproxy-base (env :imageproxy-base-url)
+        resize "fit"
+        width 600
+        height 400
+        gravity "no"
+        enlarge 0
+        extension "png"
+        signed-url (images/signed-imgproxy-url image-url resize width height gravity enlarge extension)]
+    (str imgproxy-base signed-url)))
+
+(defn fetch-remote-image [image-name]
+  ; https://github.com/http-kit/http-kit/issues/90#issuecomment-191052170
+  ; says I should switch to clj-http if I want to stream the data via a
+  ; piped-input-stream to output stream sort of thing (so make-file-stream is
+  ; currently unused because we need to buffer the whole image in this service before we can
+  ; send it to the client. It should only be a few hundred kb to some mb of data so
+  ; I don't think this is a huge deal immediately
+  ; our image names are in the format s3://%bucket_name/%file_key
+  ; so (str "s3://" (env :bucket-name) "/" image-name)
+  ; will give us our file in production (image-name will be a uuid)
+  (let [image-response @(http/get (remote-image-url image-name))
+        image-data  (.bytes (:body image-response))
+        image-response-headers (:headers image-response)]
+    (log/warn "Image data fetched from proxy")
+    (log/warn (type image-data))
+    (log/warn image-response-headers)
+    (-> (ring.util.response/response image-data)
+        ;make-file-stream
+        (header "Content-Disposition" (str "inline; filename=\"" image-name "\""))
+        (header "Content-Type" (:content-type image-response-headers))
+        (header "Content-Length" (:content-length image-response-headers)))))
+
 
 
 
@@ -85,6 +137,11 @@
 
    ["/ping"
     {:get (constantly (ok {:message "pong"}))}]
+
+   ["/proxy-test"
+    {:get {:summary "get a single photo from imgproxy"
+           :handler (fn [_]
+                      (fetch-remote-image (str "s3://" (env :bucket-name) "/" "someuuidfilename")))}}]
 
 
    ["/photos"

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Welcome to doggallery</title>
+</head>
+<body>
+
+<div id="app">
+    <section class="section">
+        <div class="container is-fluid">
+            <div class="content">
+                this image is from a local instance of imgproxy started via <br />
+                docker run -p 8080:8080 -v $(PWD):/images -e IMGPROXY_LOCAL_FILESYSTEM_ROOT="/images" -it darthsim/imgproxy
+                <br />
+                <img src="http://localhost:8080/insecure/fit/400/200/no/0/plain/local:///img_8299.jpg@png" />
+                <br />
+                this image is proxied through this service
+                <img src="/api/proxy-test" />
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- scripts and styles -->
+{% style "/assets/bulma/css/bulma.min.css" %}
+{% style "/assets/material-icons/css/material-icons.min.css" %}
+{% style "/css/screen.css" %}
+
+<script type="text/javascript">
+        var csrfToken = "{{csrf-token}}";
+    </script>
+</body>
+</html>
