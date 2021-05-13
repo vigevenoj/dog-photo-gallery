@@ -26,21 +26,25 @@
   (let [tempfile (:tempfile file)]
     ; todo strip metadata from image
     ; todo generate thumbnails at appropriate sizes?
-    ; todo use conman/with-transaction to wrap saving the image metadata into the db and the image file into the object storage
     (if (images/is-image-file? tempfile)
         (try
          (let [meta (images/single-image-full-metadata tempfile)
-               ; make the :name a uuid
-               ; use with-transaction to wrap saving this and saving it to object storage
                userid 1
-               photo-id (db/add-dog-photo! {:name (:filename file)
-                                            :userid userid
-                                            :taken (:date-time-original meta)
-                                            :metadata meta
-                                            :photo (images/file->bytes tempfile)})]
+               photo-uuid (clj-uuid/v5 (env :uuid-namespace) tempfile)]
+           (db/upload-photo meta userid photo-uuid tempfile)
+           ;(conman.core/with-transaction [db/*db* {:rollback-only true}]
+           ;                              (db/add-dog-photo! {:name photo-uuid
+           ;                                                 :userid userid
+           ;                                                 :taken (:date-time-original meta)
+           ;                                                 :metadata meta
+           ;                                                 ; todo remove the photo binary column from database
+           ;                                                 :photo (images/file->bytes tempfile)})
+           ;                              (amazonica.aws.s3/put-object :bucket-name (env :bucket-name)
+           ;                                                           :key photo-uuid
+           ;                                                           :file tempfile))
            {:status 200
-            :body   {:name          (:filename file)
-                     :photo-id      photo-id
+            :body   {:name          photo-uuid
+                     ;:photo-id      photo-id
                      :size          (:size file)
                      :exif-metadata (images/single-image-full-metadata tempfile)}})
 
@@ -64,7 +68,9 @@
     (fn [output-stream]
       (.writeTo file output-stream))))
 
-(defn remote-image-url [image-url]
+(defn remote-image-url
+  "Build complete imgproxy url for a remote image"
+  [image-url]
   (let [imgproxy-base (env :imageproxy-base-url)
         resize "fit"
         width 600

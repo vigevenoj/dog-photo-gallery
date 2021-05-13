@@ -1,5 +1,6 @@
 (ns doggallery.db.core
   (:require
+    [amazonica.aws.s3 :as s3]
     [cheshire.core :refer [generate-string parse-string]]
     [next.jdbc.date-time]
     [next.jdbc.prepare]
@@ -7,7 +8,8 @@
     [clojure.tools.logging :as log]
     [conman.core :as conman]
     [doggallery.config :refer [env]]
-    [mount.core :refer [defstate]])
+    [mount.core :refer [defstate]]
+    [clojure.java.jdbc :as jdbc])
   (:import (org.postgresql.util PGobject)))
 
 (defstate ^:dynamic *db*
@@ -74,3 +76,13 @@
                            (apply str (rest type-name)))]
         (.setObject stmt idx (.createArrayOf conn elem-type (to-array v)))
         (.setObject stmt idx (clj->jsonb-pgobj v))))))
+
+(defn upload-photo [meta userid photo-uuid photo-data]
+  (conman/with-transaction [*db* {:rollback-only true}]
+                           (add-dog-photo! {:name photo-uuid
+                                            :userid userid
+                                            :taken (:date-time-original meta)
+                                            :metadata meta})
+                           (s3/put-object :bucket-name (env :bucket-name)
+                                          :key photo-uuid
+                                          :file photo-data)))

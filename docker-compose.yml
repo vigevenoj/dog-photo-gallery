@@ -1,0 +1,42 @@
+version: '2.1'
+services:
+  localstack:
+    image: localstack/localstack:latest
+    ports:
+      - "443:443"
+      - "4510-4520:4510-4520"
+      - "4566-4620:4566-4620"
+    environment:
+      - SERVICES=s3
+      - DEBUG=1
+      - DATA_DIR=/tmp/localstack/data
+      - HOST_TMP_FOLDER=${PWD}/.tmp
+    volumes:
+      - "${PWD}/.tmp:/tmp/localstack"
+  postgres:
+    image: postgres:13
+    environment:
+      - POSTGRES_USER=doggallery
+      - POSTGRES_PASSWORD=doggallery
+      - POSTGRES_DB=doggallery_dev
+#    ports:
+#      - "5432:5432"
+  imgproxy:
+    image: darthsim/imgproxy:v2.16
+    environment:
+      - IMGPROXY_KEY=eb63d1ab9e1b9685f199427be2336fe1296fdc15ea867ded3c2e973ff4e532fee154f8ee7cfbf24ce7178d4927e50418a6cedac1dddcad1410e3f3cb12a3602e
+      - IMGPROXY_SALT=c18601681d24d286dc74ee0af9f34891c5e0367576a02daccaa300dde6bf7ef76ed2b7cf00c3503e2f789d4f372cdd41d5ec3895d94ab373ae91de912ab39e0b
+      - IMGPROXY_USE_S3=true
+      - IMGPROXY_S3_REGION=us-east-1
+      - IMGPROXY_S3_ENDPOINT=http://localhost:4566
+      - AWS_ACCESS_KEY=foo
+      - AWS_SECRET_ACCESS_KEY=bar
+    ports:
+      - "8080:8080"
+
+#  doggallery:
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+#    ports:
+#      - "3000:3000"
