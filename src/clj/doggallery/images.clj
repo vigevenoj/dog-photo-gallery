@@ -1,7 +1,8 @@
 (ns doggallery.images
   (:require
     [clojure.java.io :as io]
-    ;[pantomime.mime :refer [mime-type-of]]
+    [pantomime.mime :refer [mime-type-of]]
+    [clojure.tools.logging :as log]
     [remworks.exif-reader :as exif]
     [buddy.core.codecs :as codecs]
     [doggallery.config :refer [env]])
@@ -22,7 +23,7 @@
 (defn is-image-file?
   "Return true if this file is an image type we can handle"
   [file]
-  (boolean (some #{(Files/probeContentType (.toPath file))} image-file-types)))
+  (boolean (some #{(mime-type-of (io/as-file file))} image-file-types)))
 
 (defn single-image-full-metadata
       "Return the full map of EXIF metadata from an image"
