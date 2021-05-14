@@ -16,7 +16,6 @@
     [doggallery.config :refer [env]]
     [doggallery.db.core :as db]
     [doggallery.images :as images]
-    ;[pantomime.mime :refer [mime-type-of]]
     [clj-uuid :as uuid]
     [clojure.java.io :as io])
   (:import (java.io ByteArrayInputStream)))
@@ -32,21 +31,10 @@
                userid 1
                photo-uuid (clj-uuid/v5 (env :uuid-namespace) tempfile)]
            (db/upload-photo meta userid photo-uuid tempfile)
-           ;(conman.core/with-transaction [db/*db* {:rollback-only true}]
-           ;                              (db/add-dog-photo! {:name photo-uuid
-           ;                                                 :userid userid
-           ;                                                 :taken (:date-time-original meta)
-           ;                                                 :metadata meta
-           ;                                                 ; todo remove the photo binary column from database
-           ;                                                 :photo (images/file->bytes tempfile)})
-           ;                              (amazonica.aws.s3/put-object :bucket-name (env :bucket-name)
-           ;                                                           :key photo-uuid
-           ;                                                           :file tempfile))
            {:status 200
             :body   {:name          photo-uuid
-                     ;:photo-id      photo-id
                      :size          (:size file)
-                     :exif-metadata (images/single-image-full-metadata tempfile)}})
+                     :exif-metadata meta}})
 
          (catch Exception e
            (do
