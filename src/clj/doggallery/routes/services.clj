@@ -168,7 +168,7 @@
     ["/secure/upload"
      {:post {:summary "upload a photo. jpg only"
              :parameters {:multipart {:file multipart/temp-file-part}}
-             :responses {200 {:body {:name any?, :size int?, :exif-metadata map?}}
+             :responses {200 {:body {:name uuid?, :size int?, :exif-metadata map?}}
                          400 {:description "Bad request"}}
              :handler (fn [{{{:keys [file]} :multipart} :parameters}]
                         (handle-image-upload file))}}]
@@ -176,12 +176,12 @@
     ["/:photo-id"
      {:get {:summary "Get data about a single photo by its ID"
             :swagger {:produces ["application/json"]}
-            :parameters {:path {:photo-id int?}}
-            :responses {:200 {:body {:id int? :name string? :exif-metadata map?}}
+            :parameters {:path {:photo-id uuid?}}
+            :responses {:200 {:body {:id int? :name uuid? :exif-metadata map?}}
                         :400 {:description "Bad request"}
                         :404 {:description "Not found"}}
             :handler (fn [{{{:keys [photo-id]} :path } :parameters}]
-                       (if-let [result (db/get-dog-photo {:id photo-id})]
+                       (if-let [result (db/get-dog-photo-by-uuid {:name photo-id})]
                          {:status 200
                           :body result}
                          {:status 404
@@ -190,15 +190,10 @@
     ["/:photo-id/image"
      {:get {:summary    "Get a photo by its ID"
             :swagger    {:produces ["image/jpg"]}
-            :parameters {:path {:photo-id int?}}
+            :parameters {:path {:photo-id uuid?}}
             :responses  {:200 {:description "An image"}
                          :404 {:description "Not found"}}
             :handler    (fn [{{{:keys [photo-id]} :path} :parameters}]
-                          (if-let [result (db/get-dog-photo {:id photo-id})]
-                            {:status  200
-                             :headers {"Content-Type" "image/jpg"}
-                             ; todo get-dog-photo no longer returns a binary
-                             ; todo use imgproxy instead
-                             :body    (ByteArrayInputStream. (:photo result))}
-                            {:status 404
-                             :body   {:error "Not found"}}))}}]]])
+                          (let [image-name (str "s3://" (env :bucket-name) "/" photo-id)]
+                            (log/warn "Using " image-name " as image-name")
+                            (fetch-remote-image image-name)))}}]]])
