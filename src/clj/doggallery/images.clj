@@ -23,9 +23,6 @@
 (defn is-image-file?
   "Return true if this file is an image type we can handle"
   [file]
-  (log/warn "file is " file)
-  (log/warn (type file))
-  (log/warn "File is type " (mime-type-of (io/as-file file)))
   (boolean (some #{(mime-type-of (io/as-file file))} image-file-types)))
 
 (defn single-image-full-metadata
