@@ -24,17 +24,12 @@ WHERE id = :id
 -- :name add-dog-photo! :! :n
 -- :doc adds a new dog photo to the database
 INSERT INTO photos
-(name, userid, taken, metadata, photo)
+(name, userid, taken, metadata)
 VALUES
-(:name, :userid, :taken, :metadata, :photo)
+(:name, :userid, :taken, :metadata)
 
 -- :name get-dog-photo :? :1
 -- :doc retrieves a dog photo given the id
-SELECT id, name, taken, metadata, photo FROM photos
-WHERE id = :id
-
--- :name get-dog-photo-no-binary :? :1
--- :doc  given the id, return a row about a dog photo, without the binary
 SELECT id, name, taken, metadata FROM photos
 WHERE id = :id
 
@@ -43,9 +38,14 @@ WHERE id = :id
 DELETE FROM photos
 WHERE id = :id
 
+-- :name get-dog-photo-by-uuid :? :1
+-- :doc retrieve a dog photo given the uuid
+SELECT id, name, taken, metadata FROM photos
+WHERE name = :name;
+
 -- :name get-previous-years-photos :? :*
 -- :doc retrieve dog photos from this day in previous years
-SELECT id, name, taken, metadata, photo from photos
+SELECT id, name, taken, metadata from photos
 WHERE extract(month from taken) = :month
 AND extract(day from taken) = :day
 ORDER BY taken desc;
