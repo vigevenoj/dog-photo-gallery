@@ -79,7 +79,7 @@
         (.setObject stmt idx (clj->jsonb-pgobj v))))))
 
 (defn upload-photo [meta userid photo-uuid photo-data]
-  (conman/with-transaction [*db* {:rollback-only true}]
+  (conman/with-transaction [*db*]
                            (add-dog-photo! *db* {:name     photo-uuid
                                                  :userid   userid
                                                  :taken    (:date-time-original meta)
