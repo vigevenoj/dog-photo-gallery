@@ -79,6 +79,8 @@
         enlarge 0
         extension "png"
         signed-url (images/signed-imgproxy-url image-url resize width height gravity enlarge extension)]
+    (log/warn "signed url is " signed-url)
+    (log/warn "full imgproxy url is " imgproxy-base image-url)
     (str imgproxy-base signed-url)))
 
 (defn fetch-remote-image [image-name]
@@ -147,7 +149,10 @@
    ["/proxy-test"
     {:get {:summary "get a single photo from imgproxy"
            :handler (fn [_]
-                      (fetch-remote-image (str "s3://" (env :bucket-name) "/" "someuuidfilename")))}}]
+                      (let [image-name (str "s3://" (env :bucket-name) "/" "242d756e-b9d1-531d-9b17-5db885e4fd61")]
+                        (log/warn "Using " image-name " as image-name")
+                        (fetch-remote-image image-name)))}}]
+
 
 
    ["/photos"
@@ -175,7 +180,7 @@
     ["/secure/upload"
      {:post {:summary "upload a photo. jpg only"
              :parameters {:multipart {:file multipart/temp-file-part}}
-             :responses {200 {:body {:name string?, :size int?, :exif-metadata map?}}
+             :responses {200 {:body {:name any?, :size int?, :exif-metadata map?}}
                          400 {:description "Bad request"}}
              :handler (fn [{{{:keys [file]} :multipart} :parameters}]
                         (handle-image-upload file))}}]
@@ -188,7 +193,7 @@
                         :400 {:description "Bad request"}
                         :404 {:description "Not found"}}
             :handler (fn [{{{:keys [photo-id]} :path } :parameters}]
-                       (if-let [result (db/get-dog-photo-no-binary {:id photo-id})]
+                       (if-let [result (db/get-dog-photo {:id photo-id})]
                          {:status 200
                           :body result}
                          {:status 404
@@ -204,6 +209,8 @@
                           (if-let [result (db/get-dog-photo {:id photo-id})]
                             {:status  200
                              :headers {"Content-Type" "image/jpg"}
+                             ; todo get-dog-photo no longer returns a binary
+                             ; todo use imgproxy instead
                              :body    (ByteArrayInputStream. (:photo result))}
                             {:status 404
                              :body   {:error "Not found"}}))}}]]])

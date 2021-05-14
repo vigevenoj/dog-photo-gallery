@@ -9,7 +9,8 @@
     [conman.core :as conman]
     [doggallery.config :refer [env]]
     [mount.core :refer [defstate]]
-    [clojure.java.jdbc :as jdbc])
+    [clojure.java.jdbc :as jdbc]
+    [clj-uuid :as uuid])
   (:import (org.postgresql.util PGobject)))
 
 (defstate ^:dynamic *db*
@@ -79,10 +80,17 @@
 
 (defn upload-photo [meta userid photo-uuid photo-data]
   (conman/with-transaction [*db* {:rollback-only true}]
-                           (add-dog-photo! {:name photo-uuid
-                                            :userid userid
-                                            :taken (:date-time-original meta)
-                                            :metadata meta})
-                           (s3/put-object :bucket-name (env :bucket-name)
-                                          :key photo-uuid
-                                          :file photo-data)))
+                           (add-dog-photo! *db* {:name     photo-uuid
+                                                 :userid   userid
+                                                 :taken    (:date-time-original meta)
+                                                 :metadata meta})
+                           ; todo handle db failure and don't put image into storage if it can't be inserted into db
+                           ; todo handle put-object failure and roll-back database transaction
+                           (let [cred {:access-key (env :object-storage-access-key)
+                                       :secret-key (env :object-storage-secret-key)
+                                       :endpoint "http://localhost:4566" ;(env :object-storage-endpoint)
+                                       :client-config {:path-style-access-enabled true}}]
+                             (-> cred (s3/put-object :bucket-name (env :bucket-name)
+                                                     :key photo-uuid
+                                                     :file photo-data)))))
+
