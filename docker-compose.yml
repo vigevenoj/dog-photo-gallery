@@ -13,12 +13,12 @@ services:
       - HOST_TMP_FOLDER=${PWD}/.tmp
     volumes:
       - "${PWD}/.tmp:/tmp/localstack"
-  postgres:
-    image: postgres:13
-    environment:
-      - POSTGRES_USER=doggallery
-      - POSTGRES_PASSWORD=doggallery
-      - POSTGRES_DB=doggallery_dev
+#  postgres:
+#    image: postgres:13
+#    environment:
+#      - POSTGRES_USER=doggallery
+#      - POSTGRES_PASSWORD=doggallery
+#      - POSTGRES_DB=doggallery_dev
 #    ports:
 #      - "5432:5432"
   imgproxy:
@@ -28,7 +28,7 @@ services:
       - IMGPROXY_SALT=c18601681d24d286dc74ee0af9f34891c5e0367576a02daccaa300dde6bf7ef76ed2b7cf00c3503e2f789d4f372cdd41d5ec3895d94ab373ae91de912ab39e0b
       - IMGPROXY_USE_S3=true
       - IMGPROXY_S3_REGION=us-east-1
-      - IMGPROXY_S3_ENDPOINT=http://localhost:4566
+      - IMGPROXY_S3_ENDPOINT=http://host.docker.internal:4566
       - AWS_ACCESS_KEY=foo
       - AWS_SECRET_ACCESS_KEY=bar
     ports:
