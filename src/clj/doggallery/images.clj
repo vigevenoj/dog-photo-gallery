@@ -2,14 +2,13 @@
   (:require
     [clojure.java.io :as io]
     [pantomime.mime :refer [mime-type-of]]
-    [clojure.tools.logging :as log]
     [remworks.exif-reader :as exif]
     [buddy.core.codecs :as codecs]
     [doggallery.config :refer [env]])
-  (:import java.nio.file.Files
-           java.util.Base64
+  (:import java.util.Base64
            javax.crypto.Mac
-           javax.crypto.spec.SecretKeySpec))
+           javax.crypto.spec.SecretKeySpec
+           (java.io ByteArrayOutputStream)))
 
 ; These keys are the ones used for basic data persistence
 ; we use date-time-original for the "taken" field
@@ -41,7 +40,7 @@
   "Convert a file to byte array, in order to store it in postgres"
   [file]
   (with-open [xin (io/input-stream file)
-              xout (java.io.ByteArrayOutputStream.)]
+              xout (ByteArrayOutputStream.)]
     (io/copy xin xout)
     (.toByteArray xout)))
 
