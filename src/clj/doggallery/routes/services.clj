@@ -2,7 +2,6 @@
   (:require
     [clojure.tools.logging :as log]
     [org.httpkit.client :as http]
-    [ring.util.http-response :as r]
     [ring.util.response]
     [reitit.swagger :as swagger]
     [reitit.swagger-ui :as swagger-ui]
@@ -15,10 +14,7 @@
     [ring.util.http-response :refer :all]
     [doggallery.config :refer [env]]
     [doggallery.db.core :as db]
-    [doggallery.images :as images]
-    [clj-uuid :as uuid]
-    [clojure.java.io :as io])
-  (:import (java.io ByteArrayInputStream)))
+    [doggallery.images :as images]))
 
 (defn handle-image-upload [file]
   (log/warn "uploaded a file")
@@ -42,9 +38,9 @@
              {:status 500
               :body "Error saving uploaded image"})))
       (do ; If the file is not an image file
-        (log/warn "is not image")
+        (log/warn "File is not an image")
         {:status 400
-         :body   {:error "File was not image"}}))))
+         :body   {:error "File was not an image"}}))))
 
 ;; make-file-stream and fetch-remote-image are adapted from
 ;; https://stackoverflow.com/questions/33375826/how-can-i-stream-gridfs-files-to-web-clients-in-clojure-monger
@@ -58,20 +54,34 @@
 
 (defn remote-image-url
   "Build complete imgproxy url for a remote image"
-  [image-url]
-  (let [imgproxy-base (env :imageproxy-base-url)
-        resize "fit"
-        width 600
-        height 400
-        gravity "no"
-        enlarge 0
-        extension "png"
-        signed-url (images/signed-imgproxy-url image-url resize width height gravity enlarge extension)]
-    (log/warn "signed url is " signed-url)
-    (log/warn "full imgproxy url is " imgproxy-base image-url)
-    (str imgproxy-base signed-url)))
+  ([image-url]
+   (remote-image-url image-url 600 400))
+  ([image-url width height]
+   (let [imgproxy-base (env :imageproxy-base-url)
+         resize "fit"
+         width width
+         height height
+         gravity "no"
+         enlarge 0
+         extension "png"
+         signed-url (images/signed-imgproxy-url image-url resize width height gravity enlarge extension)]
+     (str imgproxy-base signed-url))))
 
-(defn fetch-remote-image [image-name]
+
+(defn fetch-remote-image
+  "Fetch a remote image, specifying the height and width"
+  [image-uuid height width]
+  (let [image-response @(http/get (remote-image-url (str "s3://" (env :bucket-name) "/" image-uuid)))
+        image-data  (.bytes (:body image-response))
+        image-response-headers (:headers image-response)]
+    (-> (ring.util.response/response image-data)
+        ;make-file-stream
+        (header "Content-Disposition" (str "inline; filename=\"" image-uuid "\""))
+        (header "Content-Type" (:content-type image-response-headers))
+        (header "Content-Length" (:content-length image-response-headers)))))
+
+
+(defn fetch-dog-image [image-uuid]
   ; https://github.com/http-kit/http-kit/issues/90#issuecomment-191052170
   ; says I should switch to clj-http if I want to stream the data via a
   ; piped-input-stream to output stream sort of thing (so make-file-stream is
@@ -81,7 +91,7 @@
   ; our image names are in the format s3://%bucket_name/%file_key
   ; so (str "s3://" (env :bucket-name) "/" image-name)
   ; will give us our file in production (image-name will be a uuid)
-  (let [image-response @(http/get (remote-image-url image-name))
+  (let [image-response @(http/get (remote-image-url (str "s3://" (env :bucket-name) "/" image-uuid)))
         image-data  (.bytes (:body image-response))
         image-response-headers (:headers image-response)]
     (log/warn "Image data fetched from proxy")
@@ -89,11 +99,18 @@
     (log/warn image-response-headers)
     (-> (ring.util.response/response image-data)
         ;make-file-stream
-        (header "Content-Disposition" (str "inline; filename=\"" image-name "\""))
+        (header "Content-Disposition" (str "inline; filename=\"" image-uuid "\""))
         (header "Content-Type" (:content-type image-response-headers))
         (header "Content-Length" (:content-length image-response-headers)))))
 
-
+(defn fetch-dog-image-thumbnail [image-uuid size]
+  (let [image-response @(http/get (remote-image-url (str "s3://" (env :bucket-name) "/" image-uuid "-" size)))
+        image-data (.bytes (:body image-response))
+        image-response-headers (:headers image-response)]
+    (-> (ring.util.response/response image-data)
+        (header "Content-Disposition" (str "inline; filename=\"" image-uuid "\""))
+        (header "Content-Type" (:content-type image-response-headers))
+        (header "Content-Length" (:content-length image-response-headers)))))
 
 
 (defn service-routes []
@@ -137,9 +154,9 @@
    ["/proxy-test"
     {:get {:summary "get a single photo from imgproxy"
            :handler (fn [_]
-                      (let [image-name (str "s3://" (env :bucket-name) "/" "242d756e-b9d1-531d-9b17-5db885e4fd61")]
+                      (let [image-name "242d756e-b9d1-531d-9b17-5db885e4fd61"]
                         (log/warn "Using " image-name " as image-name")
-                        (fetch-remote-image image-name)))}}]
+                        (fetch-dog-image image-name)))}}]
 
 
 
@@ -155,7 +172,7 @@
                :handler (fn [{{{:keys [limit]} :query} :parameters}]
                           (try
                             {:status 200
-                             :body {:photos (db/get-recent-photos {:limit 10})}}))}}]
+                             :body {:photos (db/get-recent-photos {:limit limit})}}))}}]
 
 
 
@@ -194,6 +211,6 @@
             :responses  {:200 {:description "An image"}
                          :404 {:description "Not found"}}
             :handler    (fn [{{{:keys [photo-id]} :path} :parameters}]
-                          (let [image-name (str "s3://" (env :bucket-name) "/" photo-id)]
-                            (log/warn "Using " image-name " as image-name")
-                            (fetch-remote-image image-name)))}}]]])
+                          (let [image-uuid photo-id]
+                            (log/warn "Using " image-uuid " as image-name")
+                            (fetch-dog-image image-uuid)))}}]]])

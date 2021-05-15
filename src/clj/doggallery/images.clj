@@ -17,7 +17,8 @@
                      :gps-latitude :gps-latitude-ref
                      :gps-longitude :gps-longitude-ref])
 
-(def image-file-types '("image/jpeg"))
+; should use pantomime.media/image? instead
+(def image-file-types '("image/jpeg" "image/png" "image/heif" "image/heic"))
 
 (defn is-image-file?
   "Return true if this file is an image type we can handle"
