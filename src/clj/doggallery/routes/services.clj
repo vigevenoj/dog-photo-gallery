@@ -212,5 +212,4 @@
                          :404 {:description "Not found"}}
             :handler    (fn [{{{:keys [photo-id]} :path} :parameters}]
                           (let [image-uuid photo-id]
-                            (log/warn "Using " image-uuid " as image-name")
                             (fetch-dog-image image-uuid)))}}]]])

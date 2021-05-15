@@ -13,7 +13,7 @@
             <div class="content">
                 <ul>
                     {% for photo in recent-photos %}
-                        <li>{{photo.taken}} {{photo.name}}</li>
+                        <li>{{photo.taken}} <a href="/photo/{{photo.name}}">{{photo.name}}</a></li>
                     {% endfor %}
                 </ul>
 

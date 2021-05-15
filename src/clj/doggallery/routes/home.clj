@@ -15,17 +15,17 @@
   (let [recent-photos (db/get-recent-photos {:limit 10})]
     (layout/render request "recent.html" {:recent-photos recent-photos})))
 
-
-
 (defn single-photo [request]
-  (layout/render request "single-photo.html"))
+  (let [photo-uuid (-> request :path-params :photo-uuid)]
+    (log/warn (type photo-uuid))
+    (layout/render request "single-photo.html" {:photo-uuid photo-uuid})))
 
 (defn home-routes []
   [""
    {:middleware [middleware/wrap-csrf
                  middleware/wrap-formats]}
    ["/" {:get home-page}]
-   ["/photo-test" {:get single-photo}]
+   ["/photo/:photo-uuid" {:get single-photo}]
    ["/recent" {:get recent-page}]
    ["/docs" {:get (fn [_]
                     (-> (response/ok (-> "docs/docs.md" io/resource slurp))
