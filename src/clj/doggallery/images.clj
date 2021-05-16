@@ -2,7 +2,6 @@
   (:require
     [buddy.core.codecs :as codecs]
     [clojure.java.io :as io]
-    [clojure.tools.logging :as log]
     [org.httpkit.client :as http]
     [pantomime.mime :refer [mime-type-of]]
     [remworks.exif-reader :as exif]
