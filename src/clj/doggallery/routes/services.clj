@@ -1,7 +1,6 @@
 (ns doggallery.routes.services
   (:require
     [clojure.tools.logging :as log]
-    [org.httpkit.client :as http]
     [ring.util.response]
     [reitit.swagger :as swagger]
     [reitit.swagger-ui :as swagger-ui]
@@ -42,75 +41,7 @@
         {:status 400
          :body   {:error "File was not an image"}}))))
 
-;; make-file-stream and fetch-remote-image are adapted from
-;; https://stackoverflow.com/questions/33375826/how-can-i-stream-gridfs-files-to-web-clients-in-clojure-monger
-;; and
-;; https://github.com/luminus-framework/examples/blob/master/reporting-example/src/clj/reporting_example/routes/home.clj
-(defn make-file-stream
-  [file]
-  (ring.util.io/piped-input-stream
-    (fn [output-stream]
-      (.writeTo file output-stream))))
 
-(defn remote-image-url
-  "Build complete imgproxy url for a remote image"
-  ([image-url]
-   (remote-image-url image-url 600 400))
-  ([image-url width height]
-   (let [imgproxy-base (env :imageproxy-base-url)
-         resize "fit"
-         width width
-         height height
-         gravity "no"
-         enlarge 0
-         extension "png"
-         signed-url (images/signed-imgproxy-url image-url resize width height gravity enlarge extension)]
-     (str imgproxy-base signed-url))))
-
-
-(defn fetch-remote-image
-  "Fetch a remote image, specifying the height and width"
-  [image-uuid height width]
-  (let [image-response @(http/get (remote-image-url (str "s3://" (env :bucket-name) "/" image-uuid)))
-        image-data  (.bytes (:body image-response))
-        image-response-headers (:headers image-response)]
-    (-> (ring.util.response/response image-data)
-        ;make-file-stream
-        (header "Content-Disposition" (str "inline; filename=\"" image-uuid "\""))
-        (header "Content-Type" (:content-type image-response-headers))
-        (header "Content-Length" (:content-length image-response-headers)))))
-
-
-(defn fetch-dog-image [image-uuid]
-  ; https://github.com/http-kit/http-kit/issues/90#issuecomment-191052170
-  ; says I should switch to clj-http if I want to stream the data via a
-  ; piped-input-stream to output stream sort of thing (so make-file-stream is
-  ; currently unused because we need to buffer the whole image in this service before we can
-  ; send it to the client. It should only be a few hundred kb to some mb of data so
-  ; I don't think this is a huge deal immediately
-  ; our image names are in the format s3://%bucket_name/%file_key
-  ; so (str "s3://" (env :bucket-name) "/" image-name)
-  ; will give us our file in production (image-name will be a uuid)
-  (let [image-response @(http/get (remote-image-url (str "s3://" (env :bucket-name) "/" image-uuid)))
-        image-data  (.bytes (:body image-response))
-        image-response-headers (:headers image-response)]
-    (log/warn "Image data fetched from proxy")
-    (log/warn (type image-data))
-    (log/warn image-response-headers)
-    (-> (ring.util.response/response image-data)
-        ;make-file-stream
-        (header "Content-Disposition" (str "inline; filename=\"" image-uuid "\""))
-        (header "Content-Type" (:content-type image-response-headers))
-        (header "Content-Length" (:content-length image-response-headers)))))
-
-(defn fetch-dog-image-thumbnail [image-uuid size]
-  (let [image-response @(http/get (remote-image-url (str "s3://" (env :bucket-name) "/" image-uuid) 150 100))
-        image-data (.bytes (:body image-response))
-        image-response-headers (:headers image-response)]
-    (-> (ring.util.response/response image-data)
-        (header "Content-Disposition" (str "inline; filename=\"" image-uuid "\""))
-        (header "Content-Type" (:content-type image-response-headers))
-        (header "Content-Length" (:content-length image-response-headers)))))
 
 
 (defn service-routes []
@@ -156,7 +87,7 @@
            :handler (fn [_]
                       (let [image-name "242d756e-b9d1-531d-9b17-5db885e4fd61"]
                         (log/warn "Using " image-name " as image-name")
-                        (fetch-dog-image image-name)))}}]
+                        (images/fetch-dog-image image-name)))}}]
 
 
 
@@ -212,7 +143,7 @@
                          :404 {:description "Not found"}}
             :handler    (fn [{{{:keys [photo-id]} :path} :parameters}]
                           (let [image-uuid photo-id]
-                            (fetch-dog-image image-uuid)))}}]
+                            (images/fetch-dog-image image-uuid)))}}]
     ["/:photo-id/thumbnail"
      {:get {:summary    "Get a thumbnail for a photo by its ID"
             :swagger    {:produces ["image/jpg"]}
@@ -221,4 +152,4 @@
                          :404 {:description "Not found"}}
             :handler    (fn [{{{:keys [photo-id]} :path} :parameters}]
                           (let [image-uuid photo-id]
-                            (fetch-dog-image-thumbnail image-uuid 150)))}}]]])
+                            (images/fetch-dog-image-thumbnail image-uuid 150)))}}]]])
