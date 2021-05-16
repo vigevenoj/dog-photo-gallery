@@ -104,7 +104,7 @@
         (header "Content-Length" (:content-length image-response-headers)))))
 
 (defn fetch-dog-image-thumbnail [image-uuid size]
-  (let [image-response @(http/get (remote-image-url (str "s3://" (env :bucket-name) "/" image-uuid "-" size)))
+  (let [image-response @(http/get (remote-image-url (str "s3://" (env :bucket-name) "/" image-uuid) 150 100))
         image-data (.bytes (:body image-response))
         image-response-headers (:headers image-response)]
     (-> (ring.util.response/response image-data)
@@ -212,4 +212,13 @@
                          :404 {:description "Not found"}}
             :handler    (fn [{{{:keys [photo-id]} :path} :parameters}]
                           (let [image-uuid photo-id]
-                            (fetch-dog-image image-uuid)))}}]]])
+                            (fetch-dog-image image-uuid)))}}]
+    ["/:photo-id/thumbnail"
+     {:get {:summary    "Get a thumbnail for a photo by its ID"
+            :swagger    {:produces ["image/jpg"]}
+            :parameters {:path {:photo-id uuid?}}
+            :responses  {:200 {:description "An image"}
+                         :404 {:description "Not found"}}
+            :handler    (fn [{{{:keys [photo-id]} :path} :parameters}]
+                          (let [image-uuid photo-id]
+                            (fetch-dog-image-thumbnail image-uuid 150)))}}]]])
