@@ -1,7 +1,9 @@
 (ns doggallery.bulk
   (:require
+    [amazonica.aws.s3 :as s3]
     [clojure.java.io :as io]
     [clojure.tools.logging :as log]
+    [doggallery.config :refer [env]]
     [doggallery.db.core :as db]
     [doggallery.images :as images]))
 
@@ -29,3 +31,33 @@
   (let [image-paths (filter images/is-image-file? (file-seq (io/file directory)))]
     (map save-image image-paths)))
 
+(defn list-all-photos
+  [opts]
+  (let [cred {:access-key (env :object-storage-access-key)
+              :secret-key (env :object-storage-secret-key)
+              :endpoint (env :object-storage-endpoint)
+              :client-config {:path-style-access-enabled true}}
+        result (s3/list-objects-v2 cred
+                 {:bucket-name (env :bucket-name)
+                  :prefix ""})]
+    (cons result (when (:truncated? result)
+                   (lazy-seq
+                     (list-all-photos
+                       (assoc opts :continuation-token (:next-continuation-token result))))))))
+
+(defn list-all-photo
+  "Returns a lazy seq of responses from amazonica.aws.s3/list-objects-v2"
+  [opts]
+  (let [cred {:access-key (env :object-storage-access-key)
+              :secret-key (env :object-storage-secret-key)
+              :endpoint (env :object-storage-endpoint)
+              :client-config {:path-style-access-enabled true}}
+        result (s3/list-objects cred opts)]
+    (cons result (when-let [next-marker (:next-marker result)]
+                   (lazy-seq (list-all-photo (assoc opts :marker next-marker)))))))
+  ;[request]
+  ;(let [response (s3/list-objects-v2 request)]
+  ;  (cons response (when (:truncated? response)
+  ;                   (lazy-seq
+  ;                     (list-all-objects
+  ;                       (assoc request :continuation-token (:next-continuation-token response))))))))

@@ -5,6 +5,7 @@
     [org.httpkit.client :as http]
     [pantomime.mime :refer [mime-type-of]]
     [remworks.exif-reader :as exif]
+    [ring.util.http-response :refer :all]
     [doggallery.config :refer [env]])
   (:import java.util.Base64
            javax.crypto.Mac
