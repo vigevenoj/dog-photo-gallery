@@ -44,20 +44,3 @@
                    (lazy-seq
                      (list-all-photos
                        (assoc opts :continuation-token (:next-continuation-token result))))))))
-
-(defn list-all-photo
-  "Returns a lazy seq of responses from amazonica.aws.s3/list-objects-v2"
-  [opts]
-  (let [cred {:access-key (env :object-storage-access-key)
-              :secret-key (env :object-storage-secret-key)
-              :endpoint (env :object-storage-endpoint)
-              :client-config {:path-style-access-enabled true}}
-        result (s3/list-objects cred opts)]
-    (cons result (when-let [next-marker (:next-marker result)]
-                   (lazy-seq (list-all-photo (assoc opts :marker next-marker)))))))
-  ;[request]
-  ;(let [response (s3/list-objects-v2 request)]
-  ;  (cons response (when (:truncated? response)
-  ;                   (lazy-seq
-  ;                     (list-all-objects
-  ;                       (assoc request :continuation-token (:next-continuation-token response))))))))
