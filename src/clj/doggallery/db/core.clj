@@ -88,7 +88,7 @@
                            ; todo handle put-object failure and roll-back database transaction
                            (let [cred {:access-key (env :object-storage-access-key)
                                        :secret-key (env :object-storage-secret-key)
-                                       :endpoint "http://localhost:4566" ;(env :object-storage-endpoint)
+                                       :endpoint (env :object-storage-endpoint)
                                        :client-config {:path-style-access-enabled true}}]
                              (-> cred (s3/put-object :bucket-name (env :bucket-name)
                                                      :key photo-uuid
