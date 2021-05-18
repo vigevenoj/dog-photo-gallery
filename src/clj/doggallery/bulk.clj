@@ -31,6 +31,35 @@
   (let [image-paths (filter images/is-image-file? (file-seq (io/file directory)))]
     (map save-image image-paths)))
 
+(defn handle-existing-object-file [photo-key]
+  ; if key is not uuid, g
+  ; if key exists in database; exit
+  ; if uuid not present in database,
+  ; fetch the object from storage,
+  ; parse the exif data
+  ; save that to the database
+  (if (db/get-dog-photo-by-uuid {:name #uuid photo-uuid})
+    (log/info "Found " photo-uuid " in database, skipping")
+    (do
+      (log/info photo-uuid " not found in database")
+      (try
+        (let [cred {:access-key (env :object-storage-access-key)
+                    :secret-key (env :object-storage-secret-key)
+                    :endpoint (env :object-storage-endpoint)
+                    :client-config {:path-style-access-enabled true}}
+              photo-data (with-open [file (s3/get-object cred {:bucket (env :bucket-name)
+                                                               :key (images/photo-uuid->key photo-uuid)})])
+              meta (images/single-image-full-metadata photo-data)
+              userid 1]
+          (db/add-dog-photo! {:name photo-uuid
+                              :userid userid
+                              :taken (:date-time-original meta)
+                              :metadata meta})
+          (log/info "Successfully saved entry for " photo-uuid))
+        (catch Exception e
+          (log/error "Error saving entry for " photo-uuid))))))
+
+
 (defn list-all-photos
   [opts]
   (let [cred {:access-key (env :object-storage-access-key)
