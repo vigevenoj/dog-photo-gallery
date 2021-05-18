@@ -47,6 +47,16 @@
     (io/copy xin xout)
     (.toByteArray xout)))
 
+(defn photo-file->uuid
+  "Generate a uuid for a given file"
+  [photo-file]
+  (clj-uuid/v5 (env :uuid-namespace) photo-file))
+
+(defn dogphoto-s3-path
+  "Helper to assemble an object storage path given a key and our configuration"
+  [photo-key]
+  (str "s3://" (env :bucket-name) "/" photo-key))
+
 (defn signed-imgproxy-url
   "Generate signed URL for imgproxy"
   ; adapted from https://github.com/imgproxy/imgproxy/blob/master/examples/signature.java
@@ -98,7 +108,7 @@
   ; or refactor this function to handle any remote image, not just images in our bucket
   "Fetch a remote image, specifying the height and width"
   [image-uuid height width]
-  (let [image-response @(http/get (remote-image-url (str "s3://" (env :bucket-name) "/" image-uuid)))
+  (let [image-response @(http/get (remote-image-url (dogphoto-s3-path image-uuid)))
         image-data  (.bytes (:body image-response))
         image-response-headers (:headers image-response)]
     (-> (ring.util.response/response image-data)
@@ -118,7 +128,7 @@
   ; our image names are in the format s3://%bucket_name/%file_key
   ; so (str "s3://" (env :bucket-name) "/" image-name)
   ; will give us our file in production (image-name will be a uuid)
-  (let [image-response @(http/get (remote-image-url (str "s3://" (env :bucket-name) "/" image-uuid)))
+  (let [image-response @(http/get (remote-image-url (dogphoto-s3-path image-uuid)))
         image-data  (.bytes (:body image-response))
         image-response-headers (:headers image-response)]
     (-> (ring.util.response/response image-data)
@@ -128,7 +138,7 @@
         (header "Content-Length" (:content-length image-response-headers)))))
 
 (defn fetch-dog-image-thumbnail [image-uuid size]
-  (let [image-response @(http/get (remote-image-url (str "s3://" (env :bucket-name) "/" image-uuid) 150 100))
+  (let [image-response @(http/get (remote-image-url (dogphoto-s3-path image-uuid) 150 100))
         image-data (.bytes (:body image-response))
         image-response-headers (:headers image-response)]
     (-> (ring.util.response/response image-data)

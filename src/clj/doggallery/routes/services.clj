@@ -24,7 +24,7 @@
         (try
          (let [meta (images/single-image-full-metadata tempfile)
                userid 1
-               photo-uuid (clj-uuid/v5 (env :uuid-namespace) tempfile)]
+               photo-uuid (images/photo-file->uuid tempfile)]
            (db/upload-photo meta userid photo-uuid tempfile)
            {:status 200
             :body   {:name          photo-uuid
