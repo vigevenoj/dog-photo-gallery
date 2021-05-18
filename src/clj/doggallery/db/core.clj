@@ -10,7 +10,7 @@
     [doggallery.config :refer [env]]
     [mount.core :refer [defstate]]
     [clojure.java.jdbc :as jdbc]
-    [clj-uuid :as uuid])
+    [doggallery.images :as images])
   (:import (org.postgresql.util PGobject)))
 
 (defstate ^:dynamic *db*
@@ -78,7 +78,7 @@
         (.setObject stmt idx (.createArrayOf conn elem-type (to-array v)))
         (.setObject stmt idx (clj->jsonb-pgobj v))))))
 
-(defn upload-photo [meta userid photo-uuid photo-data]
+(defn upload-photo! [meta userid photo-uuid photo-data]
   (conman/with-transaction [*db*]
                            (add-dog-photo! *db* {:name     photo-uuid
                                                  :userid   userid
@@ -91,6 +91,6 @@
                                        :endpoint (env :object-storage-endpoint)
                                        :client-config {:path-style-access-enabled true}}]
                              (-> cred (s3/put-object :bucket-name (env :bucket-name)
-                                                     :key photo-uuid
+                                                     :key (images/photo-uuid->key photo-uuid)
                                                      :file photo-data)))))
 

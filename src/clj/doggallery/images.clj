@@ -52,10 +52,16 @@
   [photo-file]
   (clj-uuid/v5 (env :uuid-namespace) photo-file))
 
+(defn photo-uuid->key
+  "Helper to generate an object storage key, including prefix, from our configuration"
+  [photo-uuid]
+  ; there is no prefix yet
+  photo-uuid)
+
 (defn dogphoto-s3-path
   "Helper to assemble an object storage path given a key and our configuration"
   [photo-key]
-  (str "s3://" (env :bucket-name) "/" photo-key))
+  (str "s3://" (env :bucket-name) "/" (photo-uuid->key photo-key)))
 
 (defn signed-imgproxy-url
   "Generate signed URL for imgproxy"

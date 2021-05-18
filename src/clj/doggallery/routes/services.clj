@@ -25,7 +25,7 @@
          (let [meta (images/single-image-full-metadata tempfile)
                userid 1
                photo-uuid (images/photo-file->uuid tempfile)]
-           (db/upload-photo meta userid photo-uuid tempfile)
+           (db/upload-photo! meta userid photo-uuid tempfile)
            {:status 200
             :body   {:name          photo-uuid
                      :size          (:size file)
