@@ -1,6 +1,7 @@
 (ns doggallery.images
   (:require
     [buddy.core.codecs :as codecs]
+    [clj-uuid :as uuid]
     [clojure.java.io :as io]
     [org.httpkit.client :as http]
     [pantomime.mime :refer [mime-type-of]]
@@ -50,13 +51,19 @@
 (defn photo-file->uuid
   "Generate a uuid for a given file"
   [photo-file]
-  (clj-uuid/v5 (env :uuid-namespace) photo-file))
+  (uuid/v5 (env :uuid-namespace) photo-file))
 
 (defn photo-uuid->key
   "Helper to generate an object storage key, including prefix, from our configuration"
   [photo-uuid]
-  ; there is no prefix yet
+  ; there is no prefix yet, return the uuid as the path
   photo-uuid)
+
+(defn object-path->uuid
+  "Helper to extract the photo key from any prefix in the object storage path"
+  [path]
+  ; there is no prefix yet, return the path as the uuid
+  path)
 
 (defn dogphoto-s3-path
   "Helper to assemble an object storage path given a key and our configuration"

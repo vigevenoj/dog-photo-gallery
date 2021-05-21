@@ -10,7 +10,9 @@
     [doggallery.config :refer [env]]
     [mount.core :refer [defstate]]
     [clojure.java.jdbc :as jdbc]
-    [doggallery.images :as images])
+    [doggallery.images :as images]
+    [clojure.java.io :as io]
+    [pantomime.mime :as mime])
   (:import (org.postgresql.util PGobject)))
 
 (defstate ^:dynamic *db*
@@ -92,5 +94,6 @@
                                        :client-config {:path-style-access-enabled true}}]
                              (-> cred (s3/put-object :bucket-name (env :bucket-name)
                                                      :key (images/photo-uuid->key photo-uuid)
+                                                     :metadata {:content-type (mime/mime-type-of (io/as-file photo-data))}
                                                      :file photo-data)))))
 
