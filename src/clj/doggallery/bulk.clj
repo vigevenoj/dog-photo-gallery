@@ -96,7 +96,8 @@
                             :userid 1
                             :taken (:date-time-original metadata)
                             :metadata metadata})
-        (s3/copy-object (creds) (env :bucket-name) object-key (env :bucket-name) (images/photo-uuid->key photo-uuid))))
+        (s3/copy-object (creds) (env :bucket-name) object-key (env :bucket-name) (images/photo-uuid->key photo-uuid))
+        (s3/delete-object (creds) (env :bucket-name object-key))))
     (log/error "Object is not an image file: " object-key)))
 
 (defn handle-existing-object-file [photo-key]
@@ -119,11 +120,10 @@
 
 (defn list-all-photos
   [opts]
-  (let [cred (creds)
-        result (s3/list-objects-v2 cred
+  (let [result (s3/list-objects-v2 (creds)
                  {:bucket-name (env :bucket-name)
                   :prefix ""})]
-    (cons result (when (:truncated? result)
-                   (lazy-seq
-                     (list-all-photos
-                       (assoc opts :continuation-token (:next-continuation-token result))))))))
+    (concat (:object-summaries result) (when (:truncated? result)
+                                         (lazy-seq
+                                           (list-all-photos
+                                             (assoc opts :continuation-token (:next-continuation-token result))))))))
