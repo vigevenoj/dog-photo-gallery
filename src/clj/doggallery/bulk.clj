@@ -4,9 +4,11 @@
     [clojure.java.io :as io]
     [clojure.tools.logging :as log]
     [pantomime.mime :refer [mime-type-of]]
+    [remworks.exif-reader :as exif]
     [doggallery.config :refer [env]]
     [doggallery.db.core :as db]
-    [doggallery.images :as images]))
+    [doggallery.images :as images])
+  (:import (java.io ByteArrayOutputStream)))
 
 ; todo implement bulk-add functionality:
 ; * read a directory of files and add images to database
@@ -45,19 +47,21 @@
   ; this sort of duplicates images/is-image-file?
   ; with same caveat: it should probably use pantomime.media/image? instead
   [file-key]
-  (let [photo-stream (-> (s3/get-object (creds)
-                                        {:bucket-name (env :bucket-name)
-                                         :key file-key})
-                         :input-stream
-                         slurp)]
+  (with-open [photo-stream (-> (s3/get-object (creds)
+                                              {:bucket-name (env :bucket-name)
+                                               :key file-key})
+                               :object-content
+                               io/input-stream)]
     (boolean (some #{(mime-type-of photo-stream)} images/image-file-types))))
 
 (defn metadata-from-photo-object [object-key]
-  (let [photo-stream (-> (s3/get-object (creds) {:bucket-name (env :bucket-name)
-                                                 :key object-key})
-                         :input-stream
-                         slurp)]
-    (images/single-image-full-metadata photo-stream)))
+  (with-open [xin (-> (s3/get-object (creds) {:bucket-name (env :bucket-name)
+                                              :key object-key})
+                      :object-content
+                      io/input-stream)
+              xout (ByteArrayOutputStream.)]
+    (io/copy xin xout)
+    (exif/from-jpeg (.toByteArray xout))))
 
 
 (defn update-db-with-object-file-info [object-key]
@@ -81,13 +85,13 @@
   [object-key]
   (if (is-object-file-photo? object-key)
     (do
-      (log/warn object-key "is an image file. Generating uuid key and checking the database")
+      (log/warn object-key "is an image file. Generating uuid key and adding to the database")
       (let [photo-stream (-> (s3/get-object (creds) {:bucket-name (env :bucket-name)
                                                      :key object-key})
                              :input-stream
                              slurp)
             photo-uuid (images/photo-file->uuid photo-stream)
-            metadata (images/single-image-full-metadata photo-stream)]
+            metadata (metadata-from-photo-object object-key)]
         (db/add-dog-photo! {:name photo-uuid
                             :userid 1
                             :taken (:date-time-original metadata)

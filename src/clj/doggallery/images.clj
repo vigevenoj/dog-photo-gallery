@@ -24,14 +24,19 @@
 
 (defn is-image-file?
   "Return true if this file is an image type we can handle"
+  ; maybe we shouldn't call io/as-file ?
   [file]
   (boolean (some #{(mime-type-of (io/as-file file))} image-file-types)))
 
 (defn single-image-full-metadata
-      "Return the full map of EXIF metadata from an image"
-      [image]
-      (exif/from-jpeg (io/as-file image)))
+  ; note that this does not work for input streams from object storage
+  ; maybe we shouldn't call io/as-file ?
+  "Return the full map of EXIF metadata from an image"
+  [image]
+  (exif/from-jpeg (io/as-file image)))
 
+(defn foo []
+  nil)
 (defn single-image-core-metadata
       "Return date and location from EXIF metadata in an image"
       [image]
