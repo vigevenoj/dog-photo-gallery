@@ -1,6 +1,7 @@
 (ns doggallery.bulk
   (:require
     [amazonica.aws.s3 :as s3]
+    [clj-uuid :refer [uuidable?]]
     [clojure.java.io :as io]
     [clojure.tools.logging :as log]
     [pantomime.mime :refer [mime-type-of]]
@@ -101,21 +102,18 @@
     (log/error "Object is not an image file: " object-key)))
 
 (defn handle-existing-object-file [photo-key]
-  ; if key is not uuid, figure something out
-  ; if key is uuid, continue
-  ; if key exists in database; exit, this file has been handled
-  ; if uuid not present in database,
-  ; fetch the object from storage,
-  ; parse the exif data
-  ; save that to the database
-  (if (uuid? photo-key)
-    (log/warn photo-key "is a uuid, we should handle it")
-    (log/error photo-key "is not uuid"))
-  (if (db/get-dog-photo-by-uuid {:name photo-key})
-    (log/info "Found " photo-key " in database, skipping")
+  (if (uuidable? photo-key)
     (do
-      (log/info photo-key " not found in database")
-      (update-db-with-object-file-info photo-key))))
+      (log/warn "Checking database for presence of " photo-key)
+      (if (db/get-dog-photo-by-uuid {:name photo-key})
+        (log/info photo-key "already present in database")
+        (do
+          (log/info photo-key " not found in database")
+          (update-db-with-object-file-info photo-key))))
+    (do
+      (log/warn photo-key "is not uuid")
+      (handle-not-uuid-object-file photo-key))))
+
 
 
 (defn list-all-photos
