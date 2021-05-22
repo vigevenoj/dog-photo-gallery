@@ -45,14 +45,18 @@
   ; this sort of duplicates images/is-image-file?
   ; with same caveat: it should probably use pantomime.media/image? instead
   [file-key]
-  (with-open [photo-stream (:input-stream (s3/get-object (creds)
-                                                         {:bucket (env :bucket-name)
-                                                          :key file-key}))]
+  (let [photo-stream (-> (s3/get-object (creds)
+                                        {:bucket-name (env :bucket-name)
+                                         :key file-key})
+                         :input-stream
+                         slurp)]
     (boolean (some #{(mime-type-of photo-stream)} images/image-file-types))))
 
 (defn metadata-from-photo-object [object-key]
-  (with-open [photo-stream (:input-stream (s3/get-object (creds) {:bucket (env :bucket-name)
-                                                                  :key object-key}))]
+  (let [photo-stream (-> (s3/get-object (creds) {:bucket-name (env :bucket-name)
+                                                 :key object-key})
+                         :input-stream
+                         slurp)]
     (images/single-image-full-metadata photo-stream)))
 
 
@@ -78,10 +82,12 @@
   (if (is-object-file-photo? object-key)
     (do
       (log/warn object-key "is an image file. Generating uuid key and checking the database")
-      (with-open [photo-stream (:input-stream (s3/get-object (creds) {:bucket (env :bucket-name)
-                                                                      :key object-key}))
-                  photo-uuid (images/photo-file->uuid photo-stream)
-                  metadata (images/single-image-full-metadata photo-stream)]
+      (let [photo-stream (-> (s3/get-object (creds) {:bucket-name (env :bucket-name)
+                                                     :key object-key})
+                             :input-stream
+                             slurp)
+            photo-uuid (images/photo-file->uuid photo-stream)
+            metadata (images/single-image-full-metadata photo-stream)]
         (db/add-dog-photo! {:name photo-uuid
                             :userid 1
                             :taken (:date-time-original metadata)

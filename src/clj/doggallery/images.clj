@@ -19,7 +19,6 @@
                      :gps-altitude :gps-date-stamp
                      :gps-latitude :gps-latitude-ref
                      :gps-longitude :gps-longitude-ref])
-
 ; should use pantomime.media/image? instead
 (def image-file-types '("image/jpeg" "image/png" "image/heif" "image/heic"))
 
