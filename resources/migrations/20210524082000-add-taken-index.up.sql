@@ -1,0 +1,1 @@
+create index taken_idx on photos (taken);
