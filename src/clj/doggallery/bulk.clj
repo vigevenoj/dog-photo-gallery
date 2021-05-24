@@ -109,7 +109,9 @@
         (log/info photo-key "already present in database")
         (do
           (log/info photo-key " not found in database")
-          (update-db-with-object-file-info photo-key))))
+          ; We should look up pictures with the same :taken instant
+          ; and images with the same :metadata (duplicate upload detection since metadata should match)
+          (log/info "Not handling " photo-key " because metadata might match another object"))))
     (do
       (log/warn photo-key "is not uuid")
       (handle-not-uuid-object-file photo-key))))
