@@ -97,13 +97,13 @@
     ;; should really think about how to fetch a set of images to display them,
     ;; like "most recent" or something else that makes sense?
     ;; perhaps "today's photos", "this week's photos", "the x most-recent"
-    ["" {:get {:summary "Get recent photos"
+    ["" {:get {:summary "Get recent photos, maximum 24"
                :responses {:200 {:description "a list of photos"}
                            :body {:photos map?}}
                :handler (fn [{{{:keys [limit]} :query} :parameters}]
                           (try
                             {:status 200
-                             :body {:photos (db/get-recent-photos {:limit limit})}}))}}]
+                             :body {:photos (db/get-recent-photos {:limit (min limit 24)})}}))}}]
 
 
 
@@ -152,4 +152,4 @@
                          :404 {:description "Not found"}}
             :handler    (fn [{{{:keys [photo-id]} :path} :parameters}]
                           (let [image-uuid photo-id]
-                            (images/fetch-dog-image-thumbnail image-uuid 150)))}}]]])
+                            (images/fetch-dog-image-thumbnail image-uuid 300)))}}]]])

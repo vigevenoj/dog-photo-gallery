@@ -12,7 +12,7 @@
   (layout/render request "home.html"))
 
 (defn recent-page [request]
-  (let [recent-photos (db/get-recent-photos {:limit 10})]
+  (let [recent-photos (db/get-recent-photos {:limit 12})]
     (layout/render request "recent.html" {:recent-photos recent-photos})))
 
 (defn single-photo [request]
