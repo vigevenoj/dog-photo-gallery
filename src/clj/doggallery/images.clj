@@ -155,7 +155,7 @@
         (header "Content-Length" (:content-length image-response-headers)))))
 
 (defn fetch-dog-image-thumbnail [image-uuid size]
-  (let [image-response @(http/get (remote-image-url (dogphoto-s3-path image-uuid) 150 100))
+  (let [image-response @(http/get (remote-image-url (dogphoto-s3-path image-uuid) 300 200))
         image-data (.bytes (:body image-response))
         image-response-headers (:headers image-response)]
     (-> (ring.util.response/response image-data)
