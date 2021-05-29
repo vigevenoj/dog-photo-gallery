@@ -41,16 +41,16 @@ WHERE id = :id
 -- :name get-dog-photo-by-uuid :? :1
 -- :doc retrieve a dog photo given the uuid
 SELECT p.id, p.name, p.taken, p.metadata,
-(select name from photos where taken < p.taken order by taken desc limit 1) as previous,
-(select name from photos where taken > p.taken order by taken asc limit 1) as next
+(select name from photos where taken < p.taken order by taken desc limit 1) as older,
+(select name from photos where taken > p.taken order by taken asc limit 1) as newer
 FROM photos p
 WHERE name = :name
 
 -- :name get-previous-years-photos :? :*
 -- :doc retrieve dog photos from this day in previous years
 SELECT id, name, taken, metadata from photos
-WHERE extract(month from taken) = :month
-AND extract(day from taken) = :day
+WHERE extract(month from taken) = :month::int
+AND extract(day from taken) = :day::int
 ORDER BY taken desc
 
 -- :name get-recent-photos :? :*

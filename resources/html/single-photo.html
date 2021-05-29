@@ -9,9 +9,18 @@
 
 <div id="app">
     <section class="section">
-        <div class="container is-fluid">
-            <div class="content">
-                <img src="/api/photos/{{photo-uuid}}/image" />
+        <div class="container" style="max-width:600px;">
+            <div class="card">
+                <div class="card-image">
+                    <div class="image is-4by3">
+                        <img src="/api/photos/{{photo-uuid}}/image"/>
+                    </div>
+                </div>
+                <footer class="card-footer">
+                    <a href="{{older}}" class="card-footer-item">Older</a>
+                    <a href="/memories/{{memories.month}}/{{memories.day}}" class="card-footer-item">On this date</a>
+                    <a href="{{newer}}" class="card-footer-item">Newer</a>
+                </footer>
             </div>
         </div>
     </section>

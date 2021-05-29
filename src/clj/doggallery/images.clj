@@ -110,7 +110,7 @@
    (remote-image-url image-url 600 400))
   ([image-url width height]
    (let [imgproxy-base (env :imageproxy-base-url)
-         resize "fit"
+         resize "auto"
          width width
          height height
          gravity "no"

@@ -121,6 +121,20 @@
              :handler (fn [{{{:keys [file]} :multipart} :parameters}]
                         (handle-image-upload file))}}]
 
+    ["/memories/:month/:day"
+     {:get {:summary "Get photos from the same day of the year"
+            :swagger {:produces ["application/json"]}
+            :parameters {:path {:month int?
+                                :day int?}}
+            :responses {:200 {:description "A list of photos"}
+                        :body {:photos map?}}
+            :handler (fn [{{{:keys [month day]} :path } :parameters}]
+
+                       (log/warn (type month) " " (type day))
+                       (try
+                         {:status 200
+                          :body {:photos (db/get-previous-years-photos {:month month :day day})}}))}}]
+
     ["/:photo-id"
      {:get {:summary "Get data about a single photo by its ID"
             :swagger {:produces ["application/json"]}
@@ -130,6 +144,34 @@
                         :404 {:description "Not found"}}
             :handler (fn [{{{:keys [photo-id]} :path } :parameters}]
                        (if-let [result (db/get-dog-photo-by-uuid {:name photo-id})]
+                         {:status 200
+                          :body result}
+                         {:status 404
+                          :body {:error "Not found"}}))}}]
+
+    ["/:photo-id/older"
+     {:get {:summary "Get the next older image than this one"
+            :swagger {:produces ["application/json"]}
+            :parameters {:path {:photo-id uuid?}}
+            :responses {:200 {:body {:id int? :name uuid? :exif-metadata map?}}
+                        :400 {:description "Bad request"}
+                        :404 {:description "Not found"}}
+            :handler (fn [{{{:keys [photo-id]} :path } :parameters}]
+                       (if-let [result (db/get-next-older-photo {:name photo-id})]
+                         {:status 200
+                          :body result}
+                         {:status 404
+                          :body {:error "Not found"}}))}}]
+
+    [":/photo-id/newer"
+     {:get {:summary "Get the next newer image than this one"
+            :swagger {:produces ["application/json"]}
+            :parameters {:path {:photo-id uuid?}}
+            :responses {:200 {:body {:id int? :name uuid? :exif-metadata map?}}
+                        :400 {:description "Bad request"}
+                        :404 {:description "Not found"}}
+            :handler (fn [{{{:keys [photo-id]} :path } :parameters}]
+                       (if-let [result (db/get-next-more-recent-photo {:name photo-id})]
                          {:status 200
                           :body result}
                          {:status 404

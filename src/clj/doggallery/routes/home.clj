@@ -2,9 +2,11 @@
   (:require
    [doggallery.layout :as layout]
    [doggallery.db.core :as db]
+   [clj-uuid :as uuid]
    [clojure.java.io :as io]
    [clojure.tools.logging :as log]
    [doggallery.middleware :as middleware]
+   [java-time :as jt]
    [ring.util.response]
    [ring.util.http-response :as response]))
 
@@ -13,12 +15,23 @@
 
 (defn recent-page [request]
   (let [recent-photos (db/get-recent-photos {:limit 12})]
-    (layout/render request "recent.html" {:recent-photos recent-photos})))
+    (layout/render request "photo-gallery.html" {:photos recent-photos})))
+
+(defn memories-page [request]
+  (let [month (-> request :path-params :month)
+        day (-> request :path-params :day)
+        memories-photos (db/get-previous-years-photos {:day day :month month})]
+    (log/warn (type day) " " (type month))
+    (layout/render request "photo-gallery.html" {:photos memories-photos})))
 
 (defn single-photo [request]
-  (let [photo-uuid (-> request :path-params :photo-uuid)]
-    (log/warn (type photo-uuid))
-    (layout/render request "single-photo.html" {:photo-uuid photo-uuid})))
+  (let [photo-uuid (-> request :path-params :photo-uuid)
+        info (db/get-dog-photo-by-uuid {:name (uuid/as-uuid photo-uuid)})]
+    (layout/render request "single-photo.html" {:photo-uuid photo-uuid
+                                                :memories {:month (jt/as (jt/local-date (:taken info)) :month-of-year)
+                                                           :day (jt/as (jt/local-date (:taken info)) :day-of-month)}
+                                                :older (:older info)
+                                                :newer (:newer info)})))
 
 (defn home-routes []
   [""
@@ -27,6 +40,9 @@
    ["/" {:get home-page}]
    ["/photo/:photo-uuid" {:get single-photo}]
    ["/recent" {:get recent-page}]
+   ["/memories/:month/:day" {:get memories-page
+                             :parameters {:month int?
+                                          :day int?}}]
    ["/docs" {:get (fn [_]
                     (-> (response/ok (-> "docs/docs.md" io/resource slurp))
                         (response/header "Content-Type" "text/plain; charset=utf-8")))}]])
