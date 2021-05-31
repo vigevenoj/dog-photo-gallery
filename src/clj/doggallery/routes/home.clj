@@ -38,7 +38,8 @@
    {:middleware [middleware/wrap-csrf
                  middleware/wrap-formats]}
    ["/" {:get home-page}]
-   ["/photo/:photo-uuid" {:get single-photo}]
+   ["/photo/:photo-uuid" {:get single-photo
+                          :parameters {:photo-uuid uuid?}}]
    ["/recent" {:get recent-page}]
    ["/memories/:month/:day" {:get memories-page
                              :parameters {:month int?
