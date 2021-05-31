@@ -20,11 +20,32 @@
     :class (when (= page @(rf/subscribe [:common/page])) :is-active)}
    title])
 
+(defn single-image-big [photo]
+  [:section.section>div.container>div.content
+   {:style "max-width:600px"}
+   [:div {:class "card"}
+    [:div {:class "card-image"}
+     [:div {:class "image is-4by3"}
+      [:img {:src (str "/api/photos/" (:name photo) "/image")}]]]
+    [:div {:class "card-footer"}
+     [:a {:href "#" :class "card-footer-item"} "Older"]
+     [:a {:href "#" :class "card-footer-item"} "Memories"]
+     [:a {:href "#" :class "card-footer-item"} "Newer"]]]])
+
+(defn single-image-thumbnail [photo]
+  [:div {:class "column is-one-quarter-desktop is-one-half-tablet"}
+   [:div.card
+    [:div.card-image
+     [:figure {:class "image is-3by2"}
+      [:a {:href (str "/photo/" (:name photo))}
+       [:img {:src (str "/api/photos/" (:name photo) "/thumbnail")}]]]
+     [:div.card-content (:taken photo)]]]])
+
 (defn navbar [] 
-  (r/with-let [expanded? (r/atom false)]
+  (r/with-let [expanded? ( r/atom false)]
               [:nav.navbar.is-info>div.container
                [:div.navbar-brand
-                [:a.navbar-item {:href "/" :style {:font-weight :bold}} "doggallery"]
+                [:a.navbar-item {:href "/" :style {:font-weight :bold}} "Dog Gallery"]
                 [:span.navbar-burger.burger
                  {:data-target :nav-menu
                   :on-click #(swap! expanded? not)
@@ -38,7 +59,10 @@
 
 (defn about-page []
   [:section.section>div.container>div.content
-   [:img {:src "/img/warning_clojure.png"}]])
+   [:img {:src "/img/warning_clojure.png"}]
+   [:div
+    [:a {:href "https://github.com/vigevenoj/dog-photo-gallery"}
+     [:p "Source code at github.com/vigevenoj/dog-photo-gallery"]]]])
 
 (defn home-page []
   [:section.section>div.container>div.content
@@ -59,6 +83,9 @@
     [["/" {:name        :home
            :view        #'home-page
            :controllers [{:start (fn [_] (rf/dispatch [:page/init-home]))}]}]
+     ["/recent" {:name :recent}]
+     ["/photo/:photo-uuid" {:name :single-photo}]
+     ["/memories/:month/:day" {:name :memories}]
      ["/about" {:name :about
                 :view #'about-page}]]))
 
