@@ -30,6 +30,16 @@
   (fn [db [_ docs]]
     (assoc db :docs docs)))
 
+(rf/reg-event-db
+  :set-photo
+  (fn [db [_ response]]
+    (merge db {:current-photo response})))
+
+(rf/reg-event-db
+  :set-recent-photos
+  (fn [db [_ response]]
+    (merge db {:photo-list (:photos response)})))
+
 (rf/reg-event-fx
   :fetch-docs
   (fn [_ _]
@@ -37,6 +47,25 @@
                   :uri             "/docs"
                   :response-format (ajax/raw-response-format)
                   :on-success       [:set-docs]}}))
+
+(rf/reg-event-fx
+  :page/fetch-single-photo
+  (fn [{db :db} [_ photo-uuid]]
+    {:http-xhrio {:method :get
+                  :uri (str "/api/photos/" photo-uuid)
+                  :format          (ajax/json-request-format)
+                  :response-format (ajax/json-response-format {:keywords? true})
+                  :on-success [:set-photo]}}))
+
+(rf/reg-event-fx
+  :page/fetch-recent-photos
+  (fn [{db :db} _]
+    (js/console.log "fetching recent photos")
+    {:http-xhrio {:method :get
+                  :uri "/api/photos"
+                  :format          (ajax/json-request-format)
+                  :response-format (ajax/json-response-format {:keywords? true})
+                  :on-success [:set-recent-photos]}}))
 
 (rf/reg-event-db
   :common/set-error
@@ -76,3 +105,8 @@
   :common/error
   (fn [db _]
     (:common/error db)))
+
+(rf/reg-sub
+  :photo-list
+  (fn [db _]
+    (:photo-list db)))

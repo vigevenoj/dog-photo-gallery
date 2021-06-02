@@ -33,6 +33,7 @@
      [:a {:href "#" :class "card-footer-item"} "Newer"]]]])
 
 (defn single-image-thumbnail [photo]
+  (js/console.log "generating thumbnail view for " photo)
   [:div {:class "column is-one-quarter-desktop is-one-half-tablet"}
    [:div.card
     [:div.card-image
@@ -40,6 +41,15 @@
       [:a {:href (str "/photo/" (:name photo))}
        [:img {:src (str "/api/photos/" (:name photo) "/thumbnail")}]]]
      [:div.card-content (:taken photo)]]]])
+
+(defn gallery-view []
+  [:section.section ;>div.container>div.content
+   [:div {:class "columns is-multiline"}
+    (when-let [photo-list @(rf/subscribe [:photo-list])]
+      (for [photo photo-list]
+        ^{:key (:name photo)} [single-image-thumbnail photo]))]])
+
+
 
 (defn navbar [] 
   (r/with-let [expanded? ( r/atom false)]
@@ -55,6 +65,7 @@
                 {:class (when @expanded? :is-active)}
                 [:div.navbar-start
                  [nav-link "#/" "Home" :home]
+                 [nav-link "#/recent" "Recent" :recent]
                  [nav-link "#/about" "About" :about]]]]))
 
 (defn about-page []
@@ -83,8 +94,13 @@
     [["/" {:name        :home
            :view        #'home-page
            :controllers [{:start (fn [_] (rf/dispatch [:page/init-home]))}]}]
-     ["/recent" {:name :recent}]
-     ["/photo/:photo-uuid" {:name :single-photo}]
+     ["/recent" {:name :recent
+                 :view #'gallery-view
+                 :controllers [{:start (fn [_] (do (js/console.log "Starting recent photo controller")
+                                                 (rf/dispatch [:page/fetch-recent-photos])))}]}]
+     ["/photo/:photo-uuid" {:name :single-photo
+                            :controllers [{:start (fn [parameters] (do (js/console.log "Starting " :start (-> parameters :path :photo-uuid))
+                                                                       (rf/dispatch [:page/fetch-single-photo])))}]}]
      ["/memories/:month/:day" {:name :memories}]
      ["/about" {:name :about
                 :view #'about-page}]]))

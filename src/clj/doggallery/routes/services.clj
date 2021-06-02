@@ -103,7 +103,7 @@
                :handler (fn [{{{:keys [limit]} :query} :parameters}]
                           (try
                             {:status 200
-                             :body {:photos (db/get-recent-photos {:limit (min limit 24)})}}))}}]
+                             :body {:photos (db/get-recent-photos {:limit (min (or limit 24) 24)})}}))}}]
 
 
 
