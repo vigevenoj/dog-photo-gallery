@@ -8,28 +8,45 @@
 <body>
 
 <div id="app">
-    <section class="section">
-<!--        <div class="container">-->
-<!--            <div class="content">-->
-                <div class="columns is-multiline">
-                    {% for photo in photos %}
-                    <div class="column is-one-quarter-desktop is-one-half-tablet">
-                        <div class="card">
-                            <div class="card-image">
-                                <figure class="image is-3by2">
-                                    <a href="/photo/{{photo.name}}">
-                                        <img src="/api/photos/{{photo.name}}/thumbnail" />
-                                    </a>
-                                </figure>
-                                <div class="card-content">{{photo.taken}}</div>
-                            </div>
+    <div>
+        <nav class="navbar is-info">
+            <div class="container">
+                <div class="navbar-brand">
+                    <a href="/" class="navbar-item" style="font-weight:bold;">Dog Gallery</a>
+                    <span data-target="nav-menu" class="navbar-burger burger">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </span>
+                </div>
+                <div class="navbar-menu" id="nav-menu">
+                    <div class="navbar-start">
+                        <a href="/" class="navbar-item">Home</a>
+                        <a href="/recent" class="navbar-item">Recent</a>
+                        <a href="/about" class="navbar-item">About</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+        <section class="section">
+            <div class="columns is-multiline">
+                {% for photo in photos %}
+                <div class="column is-one-quarter-desktop is-one-half-tablet">
+                    <div class="card">
+                        <div class="card-image">
+                            <figure class="image is-3by2">
+                                <a href="/photo/{{photo.name}}">
+                                    <img src="/api/photos/{{photo.name}}/thumbnail" />
+                                </a>
+                            </figure>
+                            <div class="card-content">{{photo.taken}}</div>
                         </div>
                     </div>
-                    {% endfor %}
-<!--                </div>-->
-<!--            </div>-->
-        </div>
-    </section>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+    </div>
 </div>
 
 <!-- scripts and styles -->
