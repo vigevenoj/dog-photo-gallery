@@ -35,8 +35,11 @@
   [image]
   (exif/from-jpeg (io/as-file image)))
 
-(defn foo []
-  nil)
+(defn scrub-metadata
+  "Remove GPS metadata from photo metadata"
+  [photo]
+  (update-in photo [:metadata] dissoc [:gps-latitude :gps-longitude]))
+
 (defn single-image-core-metadata
       "Return date and location from EXIF metadata in an image"
       [image]

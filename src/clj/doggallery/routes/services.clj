@@ -103,7 +103,7 @@
                :handler (fn [{{{:keys [limit]} :query} :parameters}]
                           (try
                             {:status 200
-                             :body {:photos (db/get-recent-photos {:limit (min (or limit 24) 24)})}}))}}]
+                             :body {:photos (map images/scrub-metadata (db/get-recent-photos {:limit (min (or limit 24) 24)}))}}))}}]
 
 
 
@@ -145,7 +145,7 @@
             :handler (fn [{{{:keys [photo-id]} :path } :parameters}]
                        (if-let [result (db/get-dog-photo-by-uuid {:name photo-id})]
                          {:status 200
-                          :body result}
+                          :body (images/scrub-metadata result)}
                          {:status 404
                           :body {:error "Not found"}}))}}]
 
