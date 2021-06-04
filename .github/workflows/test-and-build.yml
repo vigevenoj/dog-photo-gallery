@@ -35,6 +35,5 @@ jobs:
       with:
         push: true
         tags: |
-          docker.pkg.github.com/${{ github.repository }}/doggallery:${{ github.sha }}
-          docker.pkg.github.com/${{ github.repository }}/doggallery:${{ github.ref }}
+          docker.pkg.github.com/${{ github.repository }}/doggallery:latest
           docker.pkg.github.com/${{ github.repository }}/doggallery:${{ github.run_number }}
