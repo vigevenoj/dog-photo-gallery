@@ -133,7 +133,7 @@
                        (log/warn (type month) " " (type day))
                        (try
                          {:status 200
-                          :body {:photos (db/get-previous-years-photos {:month month :day day})}}))}}]
+                          :body {:photos (map images/scrub-metadata (db/get-previous-years-photos {:month month :day day}))}}))}}]
 
     ["/:photo-id"
      {:get {:summary "Get data about a single photo by its ID"
