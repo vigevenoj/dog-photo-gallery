@@ -13,6 +13,9 @@
 (defn home-page [request]
   (layout/render request "home.html"))
 
+(defn about-page [request]
+  (layout/render request "about.html"))
+
 (defn recent-page [request]
   (let [recent-photos (db/get-recent-photos {:limit 12})]
     (layout/render request "photo-gallery.html" {:photos recent-photos})))
@@ -44,6 +47,7 @@
    ["/memories/:month/:day" {:get memories-page
                              :parameters {:month int?
                                           :day int?}}]
+   ["/about" {:get about-page}]
    ["/docs" {:get (fn [_]
                     (-> (response/ok (-> "docs/docs.md" io/resource slurp))
                         (response/header "Content-Type" "text/plain; charset=utf-8")))}]])

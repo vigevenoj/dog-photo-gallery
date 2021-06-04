@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Welcome to doggallery</title>
+</head>
+<body>
+
+<div id="app">
+    <nav class="navbar is-info">
+        <div class="container">
+            <div class="navbar-brand">
+                <a href="/" class="navbar-item" style="font-weight:bold;">Dog Gallery</a>
+                <span data-target="nav-menu" class="navbar-burger burger">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </span>
+            </div>
+            <div class="navbar-menu" id="nav-menu">
+                <div class="navbar-start">
+                    <a href="/" class="navbar-item">Home</a>
+                    <a href="/recent" class="navbar-item">Recent</a>
+                    <a href="/about" class="navbar-item">About</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <section class="section">
+        <div class="container" style="max-width:600px;">
+            <div class="content">
+                <p>I don't know about you, but I love seeing pictures of my dogs.
+                    I like being reminded about what they were up to a year ago, and
+                    I'll probably want to be reminded about their past antics on any
+                    given day of the year.</p>
+                <p>I couldn't find a photo-sharing site that really met my needs, so
+                    I wrote this.</p>
+
+                <p>It's a basic photo-displaying site with an API that suits my needs,
+                    storing photo metadata in PostgreSQL, image data in an
+                    s3-compatible object storage system, and using imgproxy to handle
+                    image resizing operations.</p>
+                <br/>
+                <p>Source code is available at <a href="https://github.com/vigevenoj/dog-photo-gallery">github.com/vigevenoj/dog-photo-gallery</a></p>
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- scripts and styles -->
+{% style "/assets/bulma/css/bulma.min.css" %}
+{% style "/assets/material-icons/css/material-icons.min.css" %}
+{% style "/css/screen.css" %}
+
+<script type="text/javascript">
+        var csrfToken = "{{csrf-token}}";
+    </script>
+</body>
+</html>

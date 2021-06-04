@@ -69,10 +69,17 @@
 
 (defn about-page []
   [:section.section>div.container>div.content
-   [:img {:src "/img/warning_clojure.png"}]
    [:div
-    [:a {:href "https://github.com/vigevenoj/dog-photo-gallery"}
-     [:p "Source code at github.com/vigevenoj/dog-photo-gallery"]]]])
+    [:p "I don't know about you, but I love seeing pictures of my dogs.
+   I like being reminded about what they were up to a year ago, and I'll
+   probably want to be reminded about their past antics on any given day of the year."]
+    [:p "I couldn't find a photo-sharing site that really met my needs, so I wrote this."]
+    [:p "It's a basic photo-displaying site with an API that suits my needs,
+    storing photo metadata in PostgreSQL, image data in an
+    s3-compatible object storage system, and using imgproxy
+    to handle image resizing operations."]
+    [:p "Source code available at "
+     [:a {:href "https://github.com/vigevenoj/dog-photo-gallery"} "github.com/vigevenoj/dog-photo-gallery"]]]])
 
 (defn home-page []
   [:section.section>div.container>div.content
