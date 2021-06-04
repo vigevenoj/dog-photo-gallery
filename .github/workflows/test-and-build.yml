@@ -18,6 +18,9 @@ jobs:
     - name: Run tests
       # Until we have test selectors, or set up a database during tests, exclude tests that required a database
       run: lein test doggallery.handler-test doggallery.images-test
+      env:
+        PORT: 3000
+        DATABASE_URL: postgresql://localhost/doggallery_test
     - name: Build uberjar
       run: lein uberjar
       
