@@ -54,7 +54,7 @@ Copyright © 2021
 # TODO
 * database schema
   * remove exif/xmp metadata from image sent to client
-  * generate thumbnails
+  * generate thumbnails (save thumbnails in order to cache them)
   * resize image to various sizes and provide a srcset for responsive design
 * API
   * most recent photos (add pagination)
