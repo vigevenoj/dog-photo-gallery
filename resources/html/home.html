@@ -8,21 +8,30 @@
   <body>
     
     <div id="app">
+      <nav class="navbar is-info">
+        <div class="container">
+          <div class="navbar-brand">
+            <a href="/" class="navbar-item" style="font-weight:bold;">Dog Gallery</a>
+            <span data-target="nav-menu" class="navbar-burger burger">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </span>
+          </div>
+          <div class="navbar-menu" id="nav-menu">
+            <div class="navbar-start">
+              <a href="/" class="navbar-item">Home</a>
+              <a href="/recent" class="navbar-item">Recent</a>
+              <a href="/about" class="navbar-item">About</a>
+            </div>
+          </div>
+        </div>
+      </nav>
       <section class="section">
         <div class="container is-fluid">
           <div class="content">
-            <h4 class="title">Welcome to doggallery</h4>
-            <p>If you're seeing this message, that means you haven't yet compiled your ClojureScript!</p>
-            <p>Please run <code>lein figwheel</code> to start the ClojureScript compiler and reload the page.</p>
-            <h4>For better ClojureScript development experience in Chrome follow these steps:</h4>
-            <ul>
-              <li>Open DevTools
-              <li>Go to Settings ("three dots" icon in the upper right corner of DevTools > Menu > Settings F1 > General > Console)
-              <li>Check-in "Enable custom formatters"
-              <li>Close DevTools
-              <li>Open DevTools
-            </ul>
-            <p>See <a href="http://www.luminusweb.net/docs/clojurescript.md">ClojureScript</a> documentation for further details.</p>
+            <h1>Anya and Potato's Photo Gallery</h1>
+            <p>Check out the recent pictures</p>
           </div>
         </div>
       </section>

@@ -83,8 +83,8 @@
 
 (defn home-page []
   [:section.section>div.container>div.content
-   (when-let [docs @(rf/subscribe [:docs])]
-     [:div {:dangerouslySetInnerHTML {:__html (md->html docs)}}])])
+   [:h1 "Anya and Potato's Photo Gallery"]
+   [:p "Check out the recent pictures"]])
 
 (defn page []
   (if-let [page @(rf/subscribe [:common/page])]
