@@ -82,15 +82,6 @@
    ["/ping"
     {:get (constantly (ok {:message "pong"}))}]
 
-   ["/proxy-test"
-    {:get {:summary "get a single photo from imgproxy"
-           :handler (fn [_]
-                      (let [image-name "242d756e-b9d1-531d-9b17-5db885e4fd61"]
-                        (log/warn "Using " image-name " as image-name")
-                        (images/fetch-dog-image image-name)))}}]
-
-
-
    ["/photos"
     {:swagger {:tags ["photos"]
                :tryItOutEnabled true}}
@@ -129,8 +120,6 @@
             :responses {:200 {:description "A list of photos"}
                         :body {:photos map?}}
             :handler (fn [{{{:keys [month day]} :path } :parameters}]
-
-                       (log/warn (type month) " " (type day))
                        (try
                          {:status 200
                           :body {:photos (map images/scrub-metadata (db/get-previous-years-photos {:month month :day day}))}}))}}]

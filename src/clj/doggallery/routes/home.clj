@@ -24,7 +24,6 @@
   (let [month (-> request :path-params :month)
         day (-> request :path-params :day)
         memories-photos (db/get-previous-years-photos {:day day :month month})]
-    (log/warn (type day) " " (type month))
     (layout/render request "photo-gallery.html" {:photos memories-photos})))
 
 (defn single-photo [request]
@@ -47,8 +46,4 @@
    ["/memories/:month/:day" {:get memories-page
                              :parameters {:month int?
                                           :day int?}}]
-   ["/about" {:get about-page}]
-   ["/docs" {:get (fn [_]
-                    (-> (response/ok (-> "docs/docs.md" io/resource slurp))
-                        (response/header "Content-Type" "text/plain; charset=utf-8")))}]])
-
+   ["/about" {:get about-page}]])
