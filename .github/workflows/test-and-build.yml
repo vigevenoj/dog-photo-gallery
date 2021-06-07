@@ -27,13 +27,15 @@ jobs:
     - name: Log in to GitHub Docker Registry
       uses: docker/login-action@v1
       with:
-        registry: docker.pkg.github.com
+        registry: ghcr.io
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
     - name: Build container image
       uses: docker/build-push-action@v2
       with:
-        push: true
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
         tags: |
           docker.pkg.github.com/${{ github.repository }}/doggallery:latest
           docker.pkg.github.com/${{ github.repository }}/doggallery:${{ github.run_number }}
