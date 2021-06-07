@@ -33,9 +33,7 @@ jobs:
     - name: Build container image
       uses: docker/build-push-action@v2
       with:
-        registry: ghcr.io
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+        push: true
         tags: |
-          docker.pkg.github.com/${{ github.repository }}/doggallery:latest
-          docker.pkg.github.com/${{ github.repository }}/doggallery:${{ github.run_number }}
+          ghcr.io/vigevenoj/doggallery:latest
+          ghcr.io/vigevenoj/doggallery:${{ github.run_number }}
