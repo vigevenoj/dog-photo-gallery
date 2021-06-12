@@ -98,7 +98,7 @@
                             :taken (:date-time-original metadata)
                             :metadata metadata})
         (s3/copy-object (creds) (env :bucket-name) object-key (env :bucket-name) (images/photo-uuid->key photo-uuid))
-        (s3/delete-object (creds) (env :bucket-name object-key))))
+        (s3/delete-object (creds) (env :bucket-name) object-key)))
     (log/error "Object is not an image file: " object-key)))
 
 (defn handle-existing-object-file [photo-key]
