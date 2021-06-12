@@ -105,7 +105,7 @@
   (if (uuidable? photo-key)
     (do
       (log/warn "Checking database for presence of " photo-key)
-      (if (db/get-dog-photo-by-uuid {:name photo-key})
+      (if (db/get-dog-photo-by-uuid {:name (clj-uuid/as-uuid photo-key)})
         (log/info photo-key "already present in database")
         (do
           (log/info photo-key " not found in database")
