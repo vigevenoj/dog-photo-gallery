@@ -93,6 +93,8 @@
                              slurp)
             photo-uuid (images/photo-file->uuid photo-stream)
             metadata (metadata-from-photo-object object-key)]
+        (when  (nil? (:date-time-original metadata))
+          (log/warn "No date-time-original in metadata for " object-key "(" photo-uuid ")"))
         (db/add-dog-photo! {:name photo-uuid
                             :userid 1
                             :taken (:date-time-original metadata)

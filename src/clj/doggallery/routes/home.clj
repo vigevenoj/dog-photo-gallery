@@ -1,14 +1,13 @@
 (ns doggallery.routes.home
   (:require
-   [doggallery.layout :as layout]
-   [doggallery.db.core :as db]
-   [clj-uuid :as uuid]
-   [clojure.java.io :as io]
-   [clojure.tools.logging :as log]
-   [doggallery.middleware :as middleware]
-   [java-time :as jt]
-   [ring.util.response]
-   [ring.util.http-response :as response]))
+    [doggallery.layout :as layout]
+    [doggallery.db.core :as db]
+    [clj-uuid :as uuid]
+    [clojure.tools.logging :as log]
+    [doggallery.middleware :as middleware]
+    [ring.util.response]
+    [ring.util.http-response :as response]
+    [doggallery.images :as images]))
 
 (defn home-page [request]
   (layout/render request "home.html"))
@@ -28,12 +27,14 @@
 
 (defn single-photo [request]
   (let [photo-uuid (-> request :path-params :photo-uuid)
-        info (db/get-dog-photo-by-uuid {:name (uuid/as-uuid photo-uuid)})]
+        info (db/get-dog-photo-by-uuid {:name (uuid/as-uuid photo-uuid)})
+        memories (images/generate-memories-map info)]
+    (when (empty? memories)
+      (log/warn "Missing date-taken metadata for photo " photo-uuid))
     (layout/render request "single-photo.html" {:photo-uuid photo-uuid
-                                                :memories {:month (jt/as (jt/local-date (:taken info)) :month-of-year)
-                                                           :day (jt/as (jt/local-date (:taken info)) :day-of-month)}
-                                                :older (:older info)
-                                                :newer (:newer info)})))
+                                                :memories   memories
+                                                :older      (:older info)
+                                                :newer      (:newer info)})))
 
 (defn home-routes []
   [""

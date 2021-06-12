@@ -47,6 +47,15 @@
   [photo]
   (update-in photo [:metadata] dissoc [:gps-latitude :gps-longitude]))
 
+(defn generate-memories-map
+  [info]
+  (if-let [taken-date (:taken info)]
+    {:month (jt/as (jt/local-date taken-date) :month-of-year)
+     :day (jt/as (jt/local-date taken-date) :day-of-month)}
+    (do
+      (log/warn "No taken date in metadata")
+      {})))
+
 (defn file->bytes
   "Convert a file to byte array, in order to store it in postgres"
   [file]
