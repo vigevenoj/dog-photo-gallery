@@ -52,11 +52,12 @@ Copyright © 2021
 
 
 # TODO
-* database schema
-  * remove exif/xmp metadata from image sent to client
+* image handling
+  * determine orientation and adjust to handle portrait and landscape without distortion
   * generate thumbnails (save thumbnails in order to cache them)
   * resize image to various sizes and provide a srcset for responsive design
 * API
   * most recent photos (add pagination)
+  * admin feature for finding images without date-taken metadata and fixing them
 * Security
   * Use keycloak or other oidc provider to secure routes that should require authentication.
