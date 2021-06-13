@@ -29,6 +29,8 @@
   (let [photo-uuid (-> request :path-params :photo-uuid)
         info (db/get-dog-photo-by-uuid {:name (uuid/as-uuid photo-uuid)})
         memories (images/generate-memories-map info)]
+    ; get :orientation and :pixel-y-dimension and :pixel-x-dimension
+    ; and use that data to format is-3by2 or is-4by3
     (when (empty? memories)
       (log/warn "Missing date-taken metadata for photo " photo-uuid))
     (layout/render request "single-photo.html" {:photo-uuid photo-uuid
