@@ -4,9 +4,11 @@
     [clj-uuid :as uuid]
     [clojure.java.io :as io]
     [clojure.tools.logging :as log]
+    [clojure.string :refer [lower-case]]
     [java-time :as jt]
     [org.httpkit.client :as http]
     [pantomime.mime :refer [mime-type-of]]
+    [pantomime.media :as mt]
     [remworks.exif-reader :as exif]
     [ring.util.http-response :refer :all]
     [doggallery.config :refer [env]])
@@ -28,7 +30,11 @@
   "Return true if this file is an image type we can handle"
   ; maybe we shouldn't call io/as-file ?
   [file]
-  (boolean (some #{(mime-type-of (io/as-file file))} image-file-types)))
+  (let [mime-type (lower-case (mime-type-of (io/as-file file)))]
+    (log/warn "Testing " file " with mime-type" mime-type)
+    (or (mt/image? mime-type)
+        (boolean (some #{mime-type} image-file-types)))))
+
 
 (defn single-image-full-metadata
   ; note that this does not work for input streams from object storage
@@ -127,9 +133,9 @@
          resize "auto"
          width width
          height height
-         gravity "no"
+         gravity "ce"
          enlarge 0
-         extension "png"
+         extension "jpg"
          signed-url (signed-imgproxy-url image-url resize width height gravity enlarge extension)]
      (str imgproxy-base signed-url))))
 
