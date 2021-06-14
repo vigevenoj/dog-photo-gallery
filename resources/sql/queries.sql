@@ -57,6 +57,7 @@ ORDER BY taken desc
 -- :doc retrieve recently-taken dog photos
 SELECT id, name, taken, metadata
 FROM photos
+WHERE taken is not null
 ORDER BY taken DESC
 LIMIT :limit
 
