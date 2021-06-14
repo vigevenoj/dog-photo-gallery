@@ -20,24 +20,27 @@
     :class (when (= page @(rf/subscribe [:common/page])) :is-active)}
    title])
 
-(defn single-image-view [photo]
-  [:section.section>div.container>div.content
-   {:style "max-width:600px"}
-   [:div {:class "card"}
-    [:div {:class "card-image"}
-     [:div {:class "image is-4by3"}
-      [:img {:src (str "/api/photos/" (:name photo) "/image")}]]]
-    [:div {:class "card-footer"}
-     [:a {:href "#" :class "card-footer-item"} "Older"]
-     [:a {:href "#" :class "card-footer-item"} "Memories"]
-     [:a {:href "#" :class "card-footer-item"} "Newer"]]]])
+(defn single-image-view []
+  [:section.section>div.container;>div.content
+   {:style {:max-width "600px"}}
+   (when-let [current-photo @(rf/subscribe [:current-photo])]
+     [:div {:class "card"}
+      [:div {:class "card-image"}
+       [:div {:class "image is-4by3"}
+        [:img {:src (str "/api/photos/" (:name current-photo) "/image")}]]]
+      [:div {:class "card-footer"}
+       [:a {:href "#" :class "card-footer-item"} "Older"]
+       [:a {:href "#" :class "card-footer-item"} "Memories"]
+       [:a {:href "#" :class "card-footer-item"} "Newer"]]])])
+
+
 
 (defn single-image-thumbnail [photo]
    [:div {:class "column is-one-quarter-desktop is-one-half-tablet"}
     [:div.card
      [:div.card-image
       [:figure {:class "image is-3by2"}
-       [:a {:href (str "/photo/" (:name photo))}
+       [:a {:href (rfe/href ::single-photo {:photo-uuid (:name photo)})}
         [:img {:src (str "/api/photos/" (:name photo) "/thumbnail")}]]]
       [:div.card-content (:taken photo)]]]])
 
@@ -63,9 +66,9 @@
                [:div#nav-menu.navbar-menu
                 {:class (when @expanded? :is-active)}
                 [:div.navbar-start
-                 [nav-link "#/" "Home" :home]
-                 [nav-link "#/recent" "Recent" :recent]
-                 [nav-link "#/about" "About" :about]]]]))
+                 [nav-link "#/" "Home" ::home]
+                 [nav-link "#/recent" "Recent" ::recent]
+                 [nav-link "#/about" "About" ::about]]]]))
 
 (defn about-page []
   [:section.section>div.container>div.content
@@ -97,18 +100,21 @@
 
 (def router
   (reitit/router
-    [["/" {:name        :home
+    [["/" {:name        ::home
            :view        #'home-page
            :controllers [{:start (fn [_] (rf/dispatch [:page/init-home]))}]}]
-     ["/recent" {:name :recent
+     ["/recent" {:name ::recent
                  :view #'gallery-view
                  :controllers [{:start (fn [_] (rf/dispatch [:page/fetch-recent-photos]))}]}]
-     ["/photo/:photo-uuid" {:name :single-photo
+     ["/photo/:photo-uuid" {:name ::single-photo
                             :view #'single-image-view
-                            :controllers [{:start (fn [parameters] (do (js/console.log "Starting " :start (-> parameters :path :photo-uuid))
-                                                                       (rf/dispatch [:page/fetch-single-photo])))}]}]
-     ["/memories/:month/:day" {:name :memories}]
-     ["/about" {:name :about
+                            :controllers [{:parameters {:path [:photo-uuid]}
+                                           :start (fn [parameters] (do
+                                                                     (js/console.log "starting single-photo" (-> parameters :path :photo-uuid))
+                                                                     (rf/dispatch [:page/fetch-single-photo (-> parameters :path :photo-uuid)])))}]}]
+     ["/memories/:month/:day" {:name ::memories
+                               :view #'gallery-view}]
+     ["/about" {:name ::about
                 :view #'about-page}]]))
 
 (defn start-router! []

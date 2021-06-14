@@ -31,6 +31,11 @@
     (merge db {:current-photo response})))
 
 (rf/reg-event-db
+  :photo-fetch-failure
+  (fn [_ [_ response]]
+    (js/console.log "Failed to fetch: " response)))
+
+(rf/reg-event-db
   :set-recent-photos
   (fn [db [_ response]]
     (merge db {:photo-list (:photos response)})))
@@ -42,7 +47,8 @@
                   :uri (str "/api/photos/" photo-uuid)
                   :format          (ajax/json-request-format)
                   :response-format (ajax/json-response-format {:keywords? true})
-                  :on-success [:set-photo]}}))
+                  :on-success [:set-photo]
+                  :on-failure [:photo-fetch-failure]}}))
 
 (rf/reg-event-fx
   :page/fetch-recent-photos
@@ -62,9 +68,10 @@
 ; leaving this as a reminder of how to dispatch an event on page load
 ; if I ever want to do dynamic content on the home page instead of
 ; a welcome with static words
-;(rf/reg-event-fx
-;  :page/init-home
-;  (fn [_ _]
+(rf/reg-event-fx
+  :page/init-home
+  (fn [_ _]
+    (js/console.log "Home page initialized")))
 ;    {:dispatch [:fetch-docs]}))
 
 ;;subscriptions
@@ -95,3 +102,8 @@
   :photo-list
   (fn [db _]
     (:photo-list db)))
+
+(rf/reg-sub
+  :current-photo
+  (fn [db _]
+    (:current-photo db)))
