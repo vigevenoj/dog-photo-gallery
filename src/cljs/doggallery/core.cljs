@@ -29,9 +29,13 @@
        [:div {:class "image is-4by3"}
         [:img {:src (str "/api/photos/" (:name current-photo) "/image")}]]]
       [:div {:class "card-footer"}
-       [:a {:href "#" :class "card-footer-item"} "Older"]
-       [:a {:href "#" :class "card-footer-item"} "Memories"]
-       [:a {:href "#" :class "card-footer-item"} "Newer"]]])])
+       [:a {:href (rfe/href ::single-photo {:photo-uuid (:older current-photo)})
+            :class "card-footer-item"} "Older"]
+       [:a {:href (rfe/href ::memories {:month 1
+                                        :day 1})
+            :class "card-footer-item"} "Memories"]
+       [:a {:href (rfe/href ::single-photo {:photo-uuid (:newer current-photo)})
+            :class "card-footer-item"} "Newer"]]])])
 
 
 
