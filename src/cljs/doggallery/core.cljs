@@ -27,7 +27,9 @@
      [:div {:class "card"}
       [:div {:class "card-image"}
        [:div {:class "image is-4by3"}
-        [:img {:src (str "/api/photos/" (:name current-photo) "/image")}]]]
+        [:img {:src (str "/api/photos/" (:name current-photo) "/image")
+               :style {:height "400px"
+                       :width "auto"}}]]]
       [:div {:class "card-footer"}
        [:a {:href (rfe/href ::single-photo {:photo-uuid (:older current-photo)})
             :class "card-footer-item"} "Older"]
@@ -43,9 +45,11 @@
    [:div {:class "column is-one-quarter-desktop is-one-half-tablet"}
     [:div.card
      [:div.card-image
-      [:figure {:class "image is-3by2"}
+      [:figure {:class "image"}
        [:a {:href (rfe/href ::single-photo {:photo-uuid (:name photo)})}
-        [:img {:src (str "/api/photos/" (:name photo) "/thumbnail")}]]]
+        [:img {:src (str "/api/photos/" (:name photo) "/thumbnail")
+               :style {:height "200px"
+                       :width "auto"}}]]]
       [:div.card-content (:taken photo)]]]])
 
 (defn gallery-view []
