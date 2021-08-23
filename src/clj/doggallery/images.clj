@@ -64,9 +64,11 @@
   (hash-map name (.get meta name)))
 
 (defn- heic-meta-to-map
+  "Return a map of keywordized keys from a Tika Metadata object"
   [meta]
   (let [names (.names meta)]
-    (clojure.walk/keywordize-keys (into {} (map (partial get-heic-metadata-entry meta) names)))))
+    (clojure.walk/keywordize-keys
+      (into {} (map (partial get-heic-metadata-entry meta) names)))))
 
 ; via https://gist.github.com/ceefour/33d6cb336287b71f5689
 (defn metadata-from-heif
@@ -77,7 +79,8 @@
         context (new ParseContext)
         handler (new DefaultHandler)]
     (with-open [r (clojure.java.io/input-stream filename)]
-      (. parser parse r handler metadata context)) (heic-meta-to-map metadata)))
+      (. parser parse r handler metadata context))
+    (heic-meta-to-map metadata)))
 
 (defn generate-memories-map
   [info]
