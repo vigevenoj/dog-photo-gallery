@@ -15,7 +15,10 @@
   (:import java.util.Base64
            javax.crypto.Mac
            javax.crypto.spec.SecretKeySpec
-           (java.io ByteArrayOutputStream)))
+           (java.io ByteArrayOutputStream)
+           (org.apache.tika.metadata Metadata)
+           (org.apache.tika.parser ParseContext AutoDetectParser)
+           (org.xml.sax.helpers DefaultHandler)))
 
 ; These keys are the ones used for basic data persistence
 ; we use date-time-original for the "taken" field
@@ -54,6 +57,27 @@
   "Remove GPS metadata from photo metadata"
   [photo]
   (update-in photo [:metadata] dissoc [:gps-latitude :gps-longitude]))
+
+(defn- get-heic-metadata-entry
+  "Convenience function for HEIC/HEIF metadata"
+  [meta name]
+  (hash-map name (.get meta name)))
+
+(defn- heic-meta-to-map
+  [meta]
+  (let [names (.names meta)]
+    (clojure.walk/keywordize-keys (into {} (map (partial get-heic-metadata-entry meta) names)))))
+
+; via https://gist.github.com/ceefour/33d6cb336287b71f5689
+(defn metadata-from-heif
+  "Read metadata from a HEIF/HEIC file and return it as a map of keywords"
+  [filename]
+  (let [metadata (new Metadata)
+        parser (new AutoDetectParser)
+        context (new ParseContext)
+        handler (new DefaultHandler)]
+    (with-open [r (clojure.java.io/input-stream filename)]
+      (. parser parse r handler metadata context)) (heic-meta-to-map metadata)))
 
 (defn generate-memories-map
   [info]
@@ -135,7 +159,7 @@
          height height
          gravity "ce"
          enlarge 0
-         extension "png"
+         extension "jpg"
          signed-url (signed-imgproxy-url image-url resize width height gravity enlarge extension)]
      (str imgproxy-base signed-url))))
 
