@@ -56,7 +56,9 @@
 (defn scrub-metadata
   "Remove GPS metadata from photo metadata"
   [photo]
-  (update-in photo [:metadata] dissoc [:gps-latitude :gps-longitude]))
+  (update-in photo [:metadata] dissoc [:gps-latitude :gps-longitude
+                                       (keyword "GPS:GPS Longitude")
+                                       (keyword "GPS:GPS Latitude")]))
 
 (defn- get-heic-metadata-entry
   "Convenience function for HEIC/HEIF metadata"
