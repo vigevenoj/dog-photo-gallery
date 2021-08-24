@@ -165,7 +165,7 @@
          height height
          gravity "ce"
          enlarge 0
-         extension "png"
+         extension "jpg"
          signed-url (signed-imgproxy-url image-url resize width height gravity enlarge extension)]
      (str imgproxy-base signed-url))))
 
