@@ -148,5 +148,5 @@
                          (assoc opts
                            :continuation-token (:next-continuation-token bucket-response))))))))
 
-(defn missing-metadata-photos []
-  (let [unprocessed (hugsql/db-run doggaller.db.core/*db* "select name from photos where metadata is null")]))
+;(defn missing-metadata-photos []
+;  (let [unprocessed (hugsql/db-run doggallery.db.core/*db* "select name from photos where metadata is null")]))
