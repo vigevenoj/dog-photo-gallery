@@ -28,6 +28,18 @@ INSERT INTO photos
 VALUES
 (:name, :userid, :taken, :metadata)
 
+-- :name update-photo-by-name! :! :n
+-- :doc update a photo's database entry by name
+UPDATE photos
+SET taken = :taken, metadata = :metadata
+WHERE name = :name
+
+-- :name update-photo-by-id! :! :n
+-- :doc update a photo's database entry by id
+UPDATE photos
+SET taken = :taken, metadata = :metadata
+WHERE id = :id
+
 -- :name get-dog-photo :? :1
 -- :doc retrieves a dog photo given the id
 SELECT id, name, taken, metadata FROM photos

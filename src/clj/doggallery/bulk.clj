@@ -148,5 +148,15 @@
                          (assoc opts
                            :continuation-token (:next-continuation-token bucket-response))))))))
 
+(defn update-database-with-object-metadata
+  "Update the database with metadata from object storage object"
+  [object-key]
+  (try
+    (let [metadata (metadata-from-photo-object object-key)]
+      (db/update-photo-by-name! {:name object-key
+                                 :taken {:date-time-original metadata}
+                                 :metadata metadata}))))
+
+
 ;(defn missing-metadata-photos []
 ;  (let [unprocessed (hugsql/db-run doggallery.db.core/*db* "select name from photos where metadata is null")]))
