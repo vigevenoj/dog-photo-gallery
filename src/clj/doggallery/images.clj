@@ -80,7 +80,10 @@
         handler (new DefaultHandler)]
     (with-open [r (clojure.java.io/input-stream filename)]
       (. parser parse r handler metadata context))
-    (heic-meta-to-map metadata)))
+    (let [image-metadata (heic-meta-to-map metadata)]
+      ; copy :exif:DateTimeOriginal to :date-time-original
+      ; in order to normalize for calculating the date it was taken
+      (assoc image-metadata :date-time-original (metadata :exif:DateTimeOriginal)))))
 
 (defn generate-memories-map
   [info]

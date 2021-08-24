@@ -67,21 +67,6 @@
                      (exif/from-jpeg (.toByteArray xout)))
       ("image/heic" "image/heif") (images/metadata-from-heif xin))))
 
-(defn metadata-from-heif-object [object-key]
-  (with-open [input (-> (s3/get-object creds {:bucket-name (env :bucket-name)
-                                              :key object-key})
-                        :object-content io/input-stream)]
-    (images/metadata-from-heif input)))
-
-
-; "d6a53e2a-e70e-55f1-89a9-f6e93a1d7c2d"
-(defn meta-from-heif [object-key]
-  (select-keys
-    (with-open [xin (->
-                      (s3/get-object creds {:bucket-name (env :bucket-name)
-                                            :key         object-key})
-                      :object-content io/input-stream)]
-      (images/metadata-from-heif xin)) [:Creation-Date :meta:creation-date (keyword "Exif SubIFD:Date/Time Original")]))
 
 (defn update-db-with-object-file-info [object-key]
   "Update the database with info from an image in the object storage"
@@ -165,15 +150,3 @@
 
 (defn missing-metadata-photos []
   (let [unprocessed (hugsql/db-run doggaller.db.core/*db* "select name from photos where metadata is null")]))
-
-
-(with-open [photo-stream
-            (-> (s3/get-object creds {:bucket-name (env :bucket-name)
-                                      :key "d6a53e2a-e70e-55f1-89a9-f6e93a1d7c2d"})
-                :object-content io/input-stream)
-            xout (ByteArrayOutputStream.)]
-  (case (mime-type-of photo-stream)
-    "image/jpeg" (do
-                   (io/copy photo-stream xout)
-                   (exif/from-jpeg (.toByteArray xout)))
-    ("image/heic" "image/heif") (images/metadata-from-heif photo-stream)))
