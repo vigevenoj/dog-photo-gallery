@@ -83,7 +83,7 @@
     (let [image-metadata (heic-meta-to-map metadata)]
       ; copy :exif:DateTimeOriginal to :date-time-original
       ; in order to normalize for calculating the date it was taken
-      (assoc image-metadata :date-time-original (metadata :exif:DateTimeOriginal)))))
+      (assoc image-metadata :date-time-original (:exif:DateTimeOriginal metadata)))))
 
 (defn generate-memories-map
   [info]
@@ -165,7 +165,7 @@
          height height
          gravity "ce"
          enlarge 0
-         extension "jpg"
+         extension "png"
          signed-url (signed-imgproxy-url image-url resize width height gravity enlarge extension)]
      (str imgproxy-base signed-url))))
 
