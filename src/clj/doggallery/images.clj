@@ -200,7 +200,7 @@
   (let [image-response @(http/get (remote-image-url (dogphoto-s3-path image-uuid)))
         image-data  (:body image-response)
         image-response-headers (:headers image-response)]
-    (log/info "Image data for " image-uuid " is " (count image-data) " bytes, Content-Length: " (:content-length image-response-headers))
+    (log/info "Image data for " image-uuid " is " (count (.bytes image-data)) " bytes, Content-Length: " (:content-length image-response-headers))
     (-> (ring.util.response/response image-data)
         (header "Content-Disposition" (str "inline"))
         (header "Content-Type" (:content-type image-response-headers))
@@ -210,7 +210,7 @@
   (let [image-response @(http/get (remote-image-url (dogphoto-s3-path image-uuid) 300 200))
         image-data (:body image-response)
         image-response-headers (:headers image-response)]
-    (log/info "Thumbnail data for " image-uuid " is " (count image-data) " bytes, Content-Length: " (:content-length image-response-headers))
+    (log/info "Thumbnail data for " image-uuid " is " (count (.bytes image-data)) " bytes, Content-Length: " (:content-length image-response-headers))
     (-> (ring.util.response/response image-data)
         (header "Content-Disposition" (str "inline"))
         (header "Content-Type" (:content-type image-response-headers))
