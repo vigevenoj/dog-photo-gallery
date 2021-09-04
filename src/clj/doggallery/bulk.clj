@@ -55,6 +55,11 @@
                                io/input-stream)]
     (boolean (some #{(mime-type-of photo-stream)} images/image-file-types))))
 
+(defn movie-filter
+  "Filter out movies"
+  [key]
+  (not (clojure.string/ends-with? key ".MOV")))
+
 (defn metadata-from-photo-object [object-key]
   (with-open [xin (-> (s3/get-object (creds) {:bucket-name (env :bucket-name)
                                               :key object-key})
@@ -162,6 +167,15 @@
                                  :taken (:date-time-original metadata)
                                  :metadata metadata}))))
 
+; This can be used to parse existing files 
+;(map bulk/handle-existing-object-file
+;     (filter movie-filter
+;             (map :key
+;                  (:object-summaries
+;                    (s3/list-objects-v2
+;                      (creds)
+;                      {:bucket-name (env :bucket-name)
+;                       :prefix "IMG_"})))))
 
 ;(defn missing-metadata-photos []
 ;  (let [unprocessed (hugsql/db-run doggallery.db.core/*db* "select name from photos where metadata is null")]
