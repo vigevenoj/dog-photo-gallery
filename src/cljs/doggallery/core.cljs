@@ -10,9 +10,17 @@
     [doggallery.ajax :as ajax]
     [doggallery.events]
     [reitit.core :as reitit]
-    [reitit.frontend.easy :as rfe]
-    [clojure.string :as string])
+    [reitit.frontend.easy :as rfe])
   (:import goog.History))
+
+(def date-regex #"\d{4}-(\d{2})-(\d{2})")
+
+(defn get-memories [taken]
+  (try
+    (if-let [md (drop 1 (re-find date-regex taken))]
+      {:month (first md)
+       :day (last md)})
+    (catch js/Object e (str "Unable to parse taken date: " e))))
 
 (defn nav-link [uri title page]
   [:a.navbar-item
@@ -33,8 +41,7 @@
       [:div {:class "card-footer"}
        [:a {:href (rfe/href ::single-photo {:photo-uuid (:older current-photo)})
             :class "card-footer-item"} "Older"]
-       [:a {:href (rfe/href ::memories {:month 1
-                                        :day 1})
+       [:a {:href (rfe/href ::memories (get-memories (:taken current-photo)))
             :class "card-footer-item"} "Memories"]
        [:a {:href (rfe/href ::single-photo {:photo-uuid (:newer current-photo)})
             :class "card-footer-item"} "Newer"]]])])
