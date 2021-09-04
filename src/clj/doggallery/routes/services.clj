@@ -188,8 +188,9 @@
      {:get {:summary "Get info about the system"
             :swagger {:produces ["application/json"]}
             :responses {:200 {:description "informational details"}}
-            :handler (fn []
-                       (let [total-count (db/count-total-photos)
-                             processed-count (db/count-processed-photos)]
-                         {:total-photos total-count
-                          :processed-photos processed-count}))}}]]])
+            :handler (fn [_]
+                       (let [total-count (:count (db/count-total-photos))
+                             processed-count (:count (db/count-processed-photos))]
+                         {:status 200
+                          :body {:total-db-photos total-count
+                                 :processed-db-photos processed-count}}))}}]]])
