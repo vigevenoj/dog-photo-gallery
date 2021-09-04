@@ -167,7 +167,7 @@
                                  :taken (:date-time-original metadata)
                                  :metadata metadata}))))
 
-; This can be used to parse existing files 
+; This can be used to parse existing files
 ;(map bulk/handle-existing-object-file
 ;     (filter movie-filter
 ;             (map :key

@@ -116,3 +116,14 @@ FROM photos
 WHERE taken < (select taken from photos where name = :name)
 ORDER BY taken desc
 LIMIT 1
+
+-- :name count-total-photos :? :1
+-- :doc count the number of photos the system knows about
+SELECT count(*)
+FROM photos
+
+-- :name count-processed-photos :? :1
+-- :doc count the number of photos with metadata and taken-date available
+SELECT count(*)
+FROM photos
+WHERE taken is not null

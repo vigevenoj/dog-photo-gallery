@@ -183,4 +183,13 @@
                          :404 {:description "Not found"}}
             :handler    (fn [{{{:keys [photo-id]} :path} :parameters}]
                           (let [image-uuid photo-id]
-                            (images/fetch-dog-image-thumbnail image-uuid 300)))}}]]])
+                            (images/fetch-dog-image-thumbnail image-uuid 300)))}}]
+    ["/info/"
+     {:get {:summary "Get info about the system"
+            :swagger {:produces ["application/json"]}
+            :responses {:200 {:description "informational details"}}
+            :handler (fn []
+                       (let [total-count (db/count-total-photos)
+                             processed-count (db/count-processed-photos)]
+                         {:total-photos total-count
+                          :processed-photos processed-count}))}}]]])
