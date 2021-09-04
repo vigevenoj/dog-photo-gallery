@@ -85,7 +85,7 @@
     (let [image-metadata (heic-meta-to-map metadata)]
       ; copy :exif:DateTimeOriginal to :date-time-original
       ; in order to normalize for calculating the date it was taken
-      (assoc image-metadata :date-time-original (:exif:DateTimeOriginal metadata)))))
+      (assoc image-metadata :date-time-original ((keyword exif:DateTimeOriginal) metadata)))))
 
 (defn generate-memories-map
   [info]

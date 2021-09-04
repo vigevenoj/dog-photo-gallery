@@ -76,9 +76,10 @@
   (try
     (let [metadata (metadata-from-photo-object object-key)
           userid 1]
+      (log/warn "Metadata for key " object-key " has taken " (:date-time-original metadata))
       (db/add-dog-photo! {:name object-key
                           :userid userid
-                          :taken {:date-time-original metadata}
+                          :taken (:date-time-original metadata)
                           :metadata metadata}))
     (catch Exception e
       (log/error "Unable to save " object-key " to database:" (.getMessage e)))))
@@ -150,13 +151,29 @@
 
 (defn update-database-with-object-metadata
   "Update the database with metadata from object storage object"
+  ; Assumes that the uuid is already present in the database
+  ; call it like this
+  ; (map update-database-with-object-metadata (map :name (hugsql/db-run doggallery.db.core/*db* "select name from photos where metadata is null")))
   [object-key]
   (try
     (let [metadata (metadata-from-photo-object object-key)]
-      (db/update-photo-by-name! {:name object-key
-                                 :taken {:date-time-original metadata}
+      (log/info "Metadata for " object-key " includes " (:date-time-original metadata))
+      (db/update-photo-by-name! {:name (clj-uuid/as-uuid object-key)
+                                 :taken (:date-time-original metadata)
                                  :metadata metadata}))))
 
 
 ;(defn missing-metadata-photos []
-;  (let [unprocessed (hugsql/db-run doggallery.db.core/*db* "select name from photos where metadata is null")]))
+;  (let [unprocessed (hugsql/db-run doggallery.db.core/*db* "select name from photos where metadata is null")]
+;    (map update-database-with-object-metadata unprocessed)))
+
+; there's probably an easier way to do this in SQL than in clojure, honestly
+;(defn fix-null-taken
+;  "Update a null taken date with a better date"
+;  [name]
+;  (let [photo (db/get-dog-photo-by-uuid name)
+;        metadata (:metadata photo)]
+;    ;(assoc image-metadata :date-time-original ((keyword exif:DateTimeOriginal) metadata))
+;    (db/update-photo-by-name {:name name
+;                              :taken (:date-time-original metadata)
+;                              :metadata metadata})))

@@ -46,6 +46,23 @@ that configuration into the docker image.
 There isn't any user management or security built into this. I'm using traefik+authelia to secure routes that should 
 require authentication.
 
+## Fixing metadata in production
+If `taken` is null but the metadata has been populated, this query can find the data that needs to be updated:
+```
+select name, taken, coalesce(metadata #>> '{date}', metadata #>> '{date-time}', metadata #>> '{exif:DateTimeOriginal}')::timestamp 
+from photos 
+where taken is null and 
+coalesce(metadata #>> '{date}', metadata #>> '{date-time}', metadata #>> '{exif:DateTimeOriginal}') is not null limit 10;
+```
+
+You can fix them with this query:
+```
+update photos 
+set taken = coalesce(metadata #>> '{date}', metadata #>> '{date-time}', metadata #>> '{exifDateTimeOriginal}')::timestamp 
+where taken is null and 
+coalesce(metadata #>> '{date}', metadata #>> '{date-time}', metadata #>> '{exif:DateTimeOriginal}') is not null;
+```
+
 ## License
 
 Copyright © 2021 
