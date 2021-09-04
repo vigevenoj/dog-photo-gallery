@@ -69,7 +69,7 @@
    ;; swagger documentation
    ["" {:no-doc true
         :swagger {:info {:title "Dog Photo Gallery"
-                         :description "https://cljdoc.org/d/metosin/reitit"}}}
+                         :description "xn--d08h7b.xn--9q8h2cq1m.ws"}}}
 
     ["/swagger.json"
      {:get (swagger/create-swagger-handler)}]
