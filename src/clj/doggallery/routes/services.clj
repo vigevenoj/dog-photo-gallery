@@ -185,12 +185,14 @@
                           (let [image-uuid photo-id]
                             (images/fetch-dog-image-thumbnail image-uuid 300)))}}]
     ["/info/"
-     {:get {:summary "Get info about the system"
+     {:get {:summary "General info about the photos in the system"
             :swagger {:produces ["application/json"]}
             :responses {:200 {:description "informational details"}}
             :handler (fn [_]
-                       (let [total-count (:count (db/count-total-photos))
+                       (let [most-recent (db/latest-photo-date)
+                             total-count (:count (db/count-total-photos))
                              processed-count (:count (db/count-processed-photos))]
                          {:status 200
-                          :body {:total-db-photos total-count
+                          :body {:most-recent most-recent
+                                 :total-db-photos total-count
                                  :processed-db-photos processed-count}}))}}]]])

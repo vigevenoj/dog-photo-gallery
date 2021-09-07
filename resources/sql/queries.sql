@@ -127,3 +127,7 @@ FROM photos
 SELECT count(*)
 FROM photos
 WHERE taken is not null
+
+-- :name latest-photo-date :? :1
+-- :doc get date of latest photo in database
+SELECT max(taken) from photos;
